@@ -298,7 +298,7 @@
     <div class="box" style="margin-bottom:14px">
       <div class="field" style="margin:0 0 8px">
         <label>표시할 열</label>
-        <select id="f_col"><option value="">열 불러오기 필요</option></select>
+        <select id="f_col"><option value="">자동 — 타임스탬프 다음 열</option></select>
       </div>
       <div class="field" style="margin:0">
         <label>질문 문구</label>
@@ -395,9 +395,9 @@
 <script>
 (function () {
   "use strict";
-  var LS = "dawn_armor_cfg_v1";
-  var DEFAULT_API_KEY = "";   // 설정창에서 입력 (localStorage 에 저장됨)
-  var DEFAULT_SHEET_ID = "";
+  var LS = "dawn_armor_cfg_v2";
+  var DEFAULT_API_KEY = "AIzaSyCYpttBX3Sjf1M7QFfTzW8yJyxye5peY-0";
+  var DEFAULT_SHEET_ID = "1QuvkzfVpptkOKPVvnRak5ihPG1eIZxxapXc9-NWMXl8";
   var DEFAULT_LABEL = "내가 버려야 할 어둠의 일은?";
   var byId = function (id) { return document.getElementById(id); };
   var field = byId("field");
@@ -405,9 +405,8 @@
   byId("f_apiKey").value = DEFAULT_API_KEY;
   byId("f_sheetId").value = DEFAULT_SHEET_ID;
 
-  var cfg = load();
-  // the column was doubled: settings saved before that get twice the soldiers too
-  if (cfg && !cfg.troopsV2) { cfg.troops = Math.min(30, (cfg.troops || 5) * 2); cfg.troopsV2 = true; save(cfg); }
+  // connect straight away with the built-in sheet; ⚙️ is only needed to change things
+  var cfg = load() || { apiKey: DEFAULT_API_KEY, sheetId: DEFAULT_SHEET_ID, tab: "", interval: 5, col: "" };
   var timer = null;
   // key -> { el, count }, rebuilt against the sheet on every poll so rows
   // deleted from the sheet also disappear from the screen.
@@ -603,12 +602,20 @@
     timer = setInterval(poll, cfg.interval * 1000);
   }
 
+  // "" means automatic: the column right after the form's timestamp
+  function autoCol(headers) {
+    for (var i = 0; i < headers.length; i++) {
+      if (/timestamp|타임스탬프/i.test(headers[i] || "")) return i + 1 < headers.length ? i + 1 : -1;
+    }
+    return headers.length > 1 ? 1 : -1;
+  }
+
   function poll() {
     if (!cfg) return;
     fetchValues(cfg).then(function (rows) {
       setStatus("live", "실시간 연결됨 · " + cfg.interval + "초");
       if (!rows.length) return;
-      var ci = rows[0].indexOf(cfg.col);
+      var ci = cfg.col ? rows[0].indexOf(cfg.col) : autoCol(rows[0]);
       if (ci === -1) { setStatus("error", "지정한 열을 찾을 수 없습니다"); return; }
       reconcile(desiredFrom(rows.slice(1), ci));
     }).catch(function (e) { setStatus("error", "오류: " + e.message); });
@@ -626,7 +633,7 @@
       ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "wordWeight"]
         .forEach(function (k) { byId("f_" + k).value = num(cfg, k); });
       byId("f_label").value = cfg.label || DEFAULT_LABEL;
-      if (cfg.col) setOne("f_col", cfg.col);
+      if (cfg.col) setOne("f_col", cfg.col); else byId("f_col").innerHTML = '<option value="">자동 — 타임스탬프 다음 열</option>';
     }
   }
   function setOne(id, val) {
@@ -647,8 +654,7 @@
       labelScale: f("labelScale"),
       wordWeight: parseInt(byId("f_wordWeight").value, 10) || DEFAULTS.wordWeight,
       col: byId("f_col").value,
-      label: byId("f_label").value.trim() || DEFAULT_LABEL,
-      troopsV2: true
+      label: byId("f_label").value.trim() || DEFAULT_LABEL
     };
   }
   function loadCols() {
@@ -661,15 +667,16 @@
       if (!rows.length) { formErr.textContent = "시트에 데이터가 없습니다."; return; }
       var headers = rows[0], sel = byId("f_col"), cur = cfg ? cfg.col : "";
       sel.innerHTML = "";
-      var guess = null;
+      var ai = autoCol(headers);
+      var auto = document.createElement("option"); auto.value = "";
+      auto.textContent = "자동 — 타임스탬프 다음 열" + (ai > -1 ? " (" + headers[ai] + ")" : "");
+      sel.appendChild(auto);
       headers.forEach(function (h) {
         var name = (h || "").trim(); if (!name) return;
         var o = document.createElement("option"); o.value = name; o.textContent = name;
         if (name === cur) o.selected = true;
-        if (!guess && /어둠/.test(name)) guess = o;   // pre-pick the question column
         sel.appendChild(o);
       });
-      if (!cur && guess) guess.selected = true;
       formErr.textContent = "✓ " + headers.length + "개 열을 찾았습니다. 표시할 열을 고르세요.";
     }).catch(function (e) { byId("btnLoadCols").textContent = "열 불러오기"; formErr.textContent = "오류: " + e.message; });
   }
@@ -677,7 +684,6 @@
     formErr.textContent = "";
     var c = readForm();
     if (!c.apiKey || !c.sheetId) { formErr.textContent = "API 키와 시트 ID는 필수입니다."; return; }
-    if (!c.col) { formErr.textContent = "표시할 열을 선택하세요."; return; }
     cfg = c; save(cfg); byId("settings").classList.remove("open"); restart();
   }
 
@@ -1135,7 +1141,7 @@
   });
 
   applyDisplay(cfg);
-  if (cfg) restart(); else { openSettings(); setStatus("idle", "설정이 필요합니다"); }
+  restart();
   syncSliders(false);
 })();
 </script>
