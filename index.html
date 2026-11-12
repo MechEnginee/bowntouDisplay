@@ -13,7 +13,7 @@
     --scale: 1;
     --mq: 1;
     --labelScale: 1;
-    --horizon: 80%;          /* where the ground meets the sky */
+    --horizon: 87%;          /* where the ground meets the sky */
     --panel: #161329;
     --border: rgba(214,204,255,.16);
     --ink: #ece8fb;
@@ -36,11 +36,11 @@
 
   /* ── the sky: deep night overhead, breaking into dawn at the horizon ── */
   .sky {
-    position: absolute; inset: 0;
+    position: absolute; left: 0; right: 0; top: 0; height: calc(var(--horizon) + 2px);
     background: linear-gradient(180deg,
-      #0d1230 0%, #161c40 16%, #1f2650 32%, #2c3160 44%,
-      #423f6c 53%, #635572 60%, #8e6670 65.5%, #c27a5c 70%,
-      #ec9644 74%, #ffac3e 76.6%, #ff8a2c 78.6%, #e9561c 80%);
+      #0d1230 0%, #161c40 20%, #1f2650 40%, #2c3160 55%,
+      #423f6c 66%, #635572 75%, #8e6670 82%, #c27a5c 87.5%,
+      #ec9644 92.5%, #ffac3e 95.7%, #ff8a2c 98.2%, #e9561c 100%);
   }
   #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
 
@@ -56,15 +56,15 @@
 
   /* ground, distant hills and the marching column live in one SVG */
   #land { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .soldiers { filter: drop-shadow(0 0 1.6px rgba(20,10,30,1)) drop-shadow(0 0 7px rgba(255,205,120,.55)); }
-  .limb { fill: none; stroke: #fff4dc; stroke-linecap: round; stroke-linejoin: round; }
-  .limb.back { stroke: #d9c7a6; opacity: .62; }
-  .armor { fill: url(#armorGrad); stroke: #fff6e0; stroke-linejoin: round; }
-  .head { fill: #22163a; stroke: #fff4dc; }
-  .crest { fill: none; stroke: #ffe3a0; stroke-linecap: round; }
-  .spear { stroke: #fff1cf; stroke-linecap: round; }
-  .spearhead { fill: #fff8e6; }
-  .tipglow { fill: url(#tipGrad); }
+  .soldiers { filter: drop-shadow(0 0 1.4px rgba(255,244,214,.75)) drop-shadow(0 0 10px rgba(255,205,120,.45)); }
+  .pt { fill: url(#hatch); stroke: #f6eed6; stroke-width: 1.05; stroke-linejoin: round; }
+  .pt.far { fill: url(#hatchFar); stroke: #b9ad94; }
+  .pt.face { fill: url(#hatchFace); }
+  .pt.crest { fill: url(#hatchV); }
+  .pt.blade { fill: #e9e2cf; stroke: #fff8e6; stroke-width: .7; }
+  .pt.flag { fill: url(#hatchFar); stroke: #f6eed6; }
+  .ln { fill: none; stroke: #f6eed6; stroke-width: .65; stroke-linecap: round; opacity: .85; }
+  .aura { fill: url(#auraGrad); }
   .stepglow { fill: url(#stepGrad); }
 
   /* ── question + verse ── */
@@ -83,21 +83,16 @@
   .question .eyebrow::after { transform: scaleX(-1); }
   .question h1 {
     font-family: "Noto Serif KR", serif; font-weight: 700;
-    font-size: calc(clamp(24px, 3.4vw, 54px) * var(--labelScale));
+    font-size: calc(clamp(20px, 2.5vw, 40px) * var(--labelScale));
     letter-spacing: .06em; color: #f3efff;
     text-shadow: 0 0 24px rgba(160,140,255,.35), 0 2px 10px rgba(0,0,0,.6);
   }
 
-  .verse {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
-    height: calc(100% - var(--horizon)); padding: 0 24px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; pointer-events: none;
-  }
+  .verse { margin-top: 1.8vh; display: flex; flex-direction: column; align-items: center; }
   .verse p {
     font-family: "Noto Serif KR", serif; font-weight: 400; line-height: 1.75;
-    font-size: calc(clamp(13px, 1.32vw, 22px) * var(--labelScale));
-    color: #d8cfe6; max-width: 72em; word-break: keep-all;
+    font-size: calc(clamp(12.5px, 1.12vw, 19px) * var(--labelScale));
+    color: #d8cfe6; max-width: 72em; text-shadow: 0 1px 8px rgba(0,0,0,.5); word-break: keep-all;
   }
   .verse p b { font-weight: 700; color: var(--gold-soft);
     text-shadow: 0 0 14px rgba(255,200,110,.45); }
@@ -108,7 +103,7 @@
   .verse sup { font-size: .62em; color: #a19bbd; margin-right: .25em; font-family: "Noto Sans KR", sans-serif; }
 
   /* ── floating words: "the deeds of darkness", drifting in the night sky ── */
-  #field { position: absolute; left: 0; right: 0; top: 17vh; bottom: 36vh; z-index: 4; }
+  #field { position: absolute; left: 0; right: 0; top: 31vh; bottom: 30vh; z-index: 4; }
   .w {
     position: absolute; white-space: nowrap; will-change: transform, opacity;
     opacity: 0;
@@ -124,9 +119,9 @@
     50%{transform:translate(-14px,-8px) rotate(1deg)} 80%{transform:translate(6px,-12px) rotate(0)} }
 
   @media (max-width: 680px) {
-    :root { --mq: .68; --horizon: 76%; }
+    :root { --mq: .68; --horizon: 85%; }
     .question { top: 4vh; }
-    #field { top: 15vh; bottom: 40vh; }
+    #field { top: 40vh; bottom: 30vh; }
   }
   @media (prefers-reduced-motion: reduce) {
     .w, .glow { animation: none !important; }
@@ -226,15 +221,26 @@
         <stop offset=".58" stop-color="#ffb060" stop-opacity=".7" />
         <stop offset="1" stop-color="#ff7a30" stop-opacity=".25" />
       </linearGradient>
-      <linearGradient id="armorGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fff3cc" />
-        <stop offset=".55" stop-color="#ffd27a" />
-        <stop offset="1" stop-color="#f0a23c" />
-      </linearGradient>
-      <radialGradient id="tipGrad">
-        <stop offset="0" stop-color="#fff6d8" stop-opacity=".95" />
-        <stop offset=".4" stop-color="#ffd27a" stop-opacity=".35" />
-        <stop offset="1" stop-color="#ffd27a" stop-opacity="0" />
+      <pattern id="hatch" patternUnits="userSpaceOnUse" width="2.1" height="2.1" patternTransform="rotate(38)">
+        <rect width="2.1" height="2.1" fill="#5d5674" />
+        <line x1=".5" y1="0" x2=".5" y2="2.1" stroke="#fff3d6" stroke-width=".6" stroke-opacity=".8" />
+      </pattern>
+      <pattern id="hatchFar" patternUnits="userSpaceOnUse" width="2.1" height="2.1" patternTransform="rotate(38)">
+        <rect width="2.1" height="2.1" fill="#3b3550" />
+        <line x1=".5" y1="0" x2=".5" y2="2.1" stroke="#e6d8b4" stroke-width=".55" stroke-opacity=".45" />
+      </pattern>
+      <pattern id="hatchFace" patternUnits="userSpaceOnUse" width="1.8" height="1.8" patternTransform="rotate(-30)">
+        <rect width="1.8" height="1.8" fill="#433c58" />
+        <line x1=".5" y1="0" x2=".5" y2="1.8" stroke="#f3e6c4" stroke-width=".45" stroke-opacity=".4" />
+      </pattern>
+      <pattern id="hatchV" patternUnits="userSpaceOnUse" width="1.6" height="1.6" patternTransform="rotate(-70)">
+        <rect width="1.6" height="1.6" fill="#4a3f55" />
+        <line x1=".5" y1="0" x2=".5" y2="1.6" stroke="#ffe9bf" stroke-width=".6" stroke-opacity=".7" />
+      </pattern>
+      <radialGradient id="auraGrad">
+        <stop offset="0" stop-color="#ffd890" stop-opacity=".38" />
+        <stop offset=".55" stop-color="#ffc070" stop-opacity=".12" />
+        <stop offset="1" stop-color="#ffc070" stop-opacity="0" />
       </radialGradient>
       <radialGradient id="stepGrad">
         <stop offset="0" stop-color="#fff0c0" stop-opacity=".95" />
@@ -253,15 +259,15 @@
   <div class="question">
     <div class="eyebrow">QUESTION</div>
     <h1 id="labelQ">내가 버려야 할 어둠의 일은?</h1>
+    <div class="verse">
+      <p><sup>11</sup>또한 너희가 이 시기를 알거니와 자다가 깰 때가 벌써 되었으니 이는 이제 우리의 구원이 처음 믿을 때보다 가까웠음이라<br />
+        <sup>12</sup>밤이 깊고 낮이 가까웠으니 그러므로 우리가 <b>어둠의 일을 벗고 빛의 갑옷을 입자</b></p>
+      <cite>로마서 13:11–12</cite>
+    </div>
   </div>
 
   <div id="field"></div>
 
-  <div class="verse">
-    <p><sup>11</sup>또한 너희가 이 시기를 알거니와 자다가 깰 때가 벌써 되었으니 이는 이제 우리의 구원이 처음 믿을 때보다 가까웠음이라<br />
-      <sup>12</sup>밤이 깊고 낮이 가까웠으니 그러므로 우리가 <b>어둠의 일을 벗고 빛의 갑옷을 입자</b></p>
-    <cite>로마서 13:11–12</cite>
-  </div>
 </div>
 
 <button id="gear" title="설정">⚙️</button>
@@ -759,19 +765,19 @@
     var svg = byId("land"), column = byId("column"), stepsG = byId("steps");
     var W = 0, H = 0, HZ = 0;
 
-    // Figure built in units: 100u from sole to crown. Everything — stride,
-    // pace, spacing — is measured in these units so size changes stay in step.
-    var THIGH = 26, SHIN = 26, HIP_H = 48.5, TORSO = 30, HEAD_R = 9;
-    var UARM = 17, FARM = 16;
-    var CYCLE = 72;            // ground covered per two steps
-    var LIFT = 10;             // a firm, high marching step
-    var GAP = 88;              // between soldiers in the column
-    var LEAN = 7 * Math.PI / 180;
-    var BASE_PX = 0.9;         // px per unit at 1× (≈90px tall soldiers)
-    var CADENCE = 0.95;        // cycles per second at 1× pace
+    // Figure built in units: ~100u from sole to crown. Stride, pace and
+    // spacing are all in these units so the size slider keeps them in step.
+    var THIGH = 24.5, SHIN = 23.5, ANKLE = 4, HIP_H = 49, TORSO = 31, HEAD = 6.8;
+    var UARM = 16.5, FARM = 15;
+    var CYCLE = 80;            // ground covered per two steps: a long, sure stride
+    var LIFT = 6;              // feet lifted cleanly, set down firmly
+    var GAP = 66;              // between soldiers in the column
+    var BASE_PX = 1.4;         // px per unit at 1× (≈140px tall soldiers)
+    var CADENCE = 0.7;         // cycles per second at 1× pace — unhurried
+    var LEAN = 0.03;           // upright, chest out
 
     var troops = [];
-    var dist = 0, last = 0;
+    var dist = 0, last = 0, clock = 0;
 
     function el(tag, cls, parent) {
       var e = document.createElementNS(NS, tag);
@@ -779,43 +785,8 @@
       parent.appendChild(e);
       return e;
     }
-
-    function makeSoldier() {
-      var g = el("g", "", column);
-      var s = {
-        g: g,
-        back: el("path", "limb back", g),
-        tip: el("circle", "tipglow", g),
-        spear: el("line", "spear", g),
-        spearhead: el("path", "spearhead", g),
-        body: el("path", "limb", g),
-        plate: el("path", "armor", g),
-        kilt: el("path", "armor", g),
-        head: el("circle", "head", g),
-        helm: el("path", "armor", g),
-        crest: el("path", "crest", g),
-        arm: el("path", "limb", g),
-        pauldron: el("circle", "armor", g),
-        glow: [el("ellipse", "stepglow", stepsG), el("ellipse", "stepglow", stepsG)]
-      };
-      s.back.setAttribute("stroke-width", 4.4);
-      s.body.setAttribute("stroke-width", 4.6);
-      s.arm.setAttribute("stroke-width", 4.4);
-      s.plate.setAttribute("stroke-width", 1.2);
-      s.helm.setAttribute("stroke-width", 1.2);
-      s.kilt.setAttribute("stroke-width", 1.2);
-      s.pauldron.setAttribute("stroke-width", 1.2);
-      s.pauldron.setAttribute("r", 4.6);
-      s.head.setAttribute("stroke-width", 2.6);
-      s.head.setAttribute("r", HEAD_R);
-      s.crest.setAttribute("stroke-width", 3.4);
-      s.spear.setAttribute("stroke-width", 2.6);
-      s.tip.setAttribute("r", 14);
-      return s;
-    }
-    function removeSoldier(s) {
-      s.g.remove(); s.glow[0].remove(); s.glow[1].remove();
-    }
+    function f(n) { return n.toFixed(2); }
+    function smooth(t) { return t * t * (3 - 2 * t); }
 
     // two-bone IK: the joint between a and b bends to the side `side` (+1/-1)
     function ik(ax, ay, bx, by, l1, l2, side) {
@@ -826,94 +797,230 @@
       var ang = base + side * Math.acos(Math.max(-1, Math.min(1, c)));
       return [ax + Math.cos(ang) * l1, ay + Math.sin(ang) * l1];
     }
-    function f(n) { return n.toFixed(2); }
-    function smooth(t) { return t * t * (3 - 2 * t); }
+    // a tapered limb with rounded ends
+    function capsule(ax, ay, bx, by, ra, rb) {
+      var dx = bx - ax, dy = by - ay, L = Math.sqrt(dx * dx + dy * dy) || 0.001;
+      var nx = -dy / L, ny = dx / L;
+      return "M" + f(ax + nx * ra) + "," + f(ay + ny * ra) +
+        "L" + f(bx + nx * rb) + "," + f(by + ny * rb) +
+        "A" + f(rb) + "," + f(rb) + " 0 0 0 " + f(bx - nx * rb) + "," + f(by - ny * rb) +
+        "L" + f(ax - nx * ra) + "," + f(ay - ny * ra) +
+        "A" + f(ra) + "," + f(ra) + " 0 0 0 " + f(ax + nx * ra) + "," + f(ay + ny * ra) + "Z";
+    }
+    // local points (x forward, y down) placed at (ox,oy) and turned by ang
+    function shape(pts, ox, oy, ang, open) {
+      var c = Math.cos(ang), s = Math.sin(ang), d = "";
+      for (var i = 0; i < pts.length; i++) {
+        var p = pts[i];
+        d += (i ? "L" : "M") + f(ox + p[0] * c - p[1] * s) + "," + f(oy + p[0] * s + p[1] * c);
+      }
+      return open ? d : d + "Z";
+    }
+    function ellipse(cx, cy, rx, ry, ang) {
+      var pts = [];
+      for (var i = 0; i < 18; i++) {
+        var t = i / 18 * Math.PI * 2;
+        pts.push([Math.cos(t) * rx, Math.sin(t) * ry]);
+      }
+      return shape(pts, cx, cy, ang);
+    }
+    function circle(e, cx, cy, r) {
+      e.setAttribute("cx", f(cx)); e.setAttribute("cy", f(cy)); if (r) e.setAttribute("r", r);
+    }
 
-    // Foot position relative to the hip for a leg at gait phase p (0..1).
-    // Stance (first half): planted on the ground, sliding back exactly as fast
-    // as the body moves forward, so it stays fixed in the world — no skating.
+    var BOOT = [[-3.4, -2.6], [2.6, -2.9], [3.8, 0.4], [8.4, 1.9], [9.2, 4], [-3.9, 4], [-4.2, 1]];
+    var SHIELD = [[-7, -13.5], [-3.5, -14.6], [0, -15], [3.5, -14.6], [7, -13.5], [7.4, 2], [6.2, 8],
+                  [3.6, 12.6], [0, 16], [-3.6, 12.6], [-6.2, 8], [-7.4, 2]];
+
+    function makeSoldier(index) {
+      var g = el("g", "", column);
+      var s = { g: g, banner: index % 4 === 1 };
+      s.aura = el("ellipse", "aura", g);
+      s.farArm = el("path", "pt far", g);
+      s.sword = el("path", "pt blade", g);
+      s.farLeg = el("path", "pt far", g);
+      s.farKnee = el("circle", "pt far", g);
+      s.farBoot = el("path", "pt far", g);
+      s.nearLeg = el("path", "pt", g);
+      s.nearKnee = el("circle", "pt", g);
+      s.nearBoot = el("path", "pt", g);
+      s.legLines = el("path", "ln", g);
+      s.fauld = el("path", "pt", g);
+      s.torso = el("path", "pt", g);
+      s.belt = el("path", "pt", g);
+      s.torsoLines = el("path", "ln", g);
+      s.neck = el("path", "pt", g);
+      s.head = el("path", "pt face", g);
+      s.crest = el("path", "pt crest", g);
+      s.helm = el("path", "pt", g);
+      s.helmLines = el("path", "ln", g);
+      s.nearArm = el("path", "pt", g);
+      s.elbow = el("circle", "pt", g);
+      s.pauldron = el("path", "pt", g);
+      s.pauldronLines = el("path", "ln", g);
+      if (s.banner) {
+        s.flag = el("path", "pt flag", g);
+        s.flagLines = el("path", "ln", g);
+        s.pole = el("path", "pt blade", g);
+      }
+      s.hand = el("circle", "pt", g);
+      if (!s.banner) {
+        s.shield = el("path", "pt", g);
+        s.shieldLines = el("path", "ln", g);
+        s.boss = el("circle", "pt", g);
+      }
+      s.glow = [el("ellipse", "stepglow", stepsG), el("ellipse", "stepglow", stepsG)];
+      s.aura.setAttribute("rx", 34); s.aura.setAttribute("ry", 56);
+      return s;
+    }
+    function removeSoldier(s) {
+      s.g.remove(); s.glow[0].remove(); s.glow[1].remove();
+    }
+
+    // Ankle position relative to the hip at gait phase p (0..1).
+    // Stance (first half): planted, sliding back exactly as fast as the body
+    // moves forward, so it stays fixed in the world — no skating.
     function foot(p) {
       if (p < 0.5) {
         var s = p / 0.5;
-        return { x: CYCLE / 4 - s * CYCLE / 2, y: 0, stance: s };
+        return { x: CYCLE / 4 - s * CYCLE / 2, y: -ANKLE, ang: 0, stance: s };
       }
       var w = (p - 0.5) / 0.5, e = smooth(w);
-      return { x: -CYCLE / 4 + e * CYCLE / 2, y: -LIFT * Math.sin(Math.PI * w), stance: -1 };
+      return { x: -CYCLE / 4 + e * CYCLE / 2, y: -ANKLE - LIFT * Math.sin(Math.PI * w),
+               ang: 0.28 * Math.sin(2 * Math.PI * w), stance: -1 };
     }
 
-    function pose(s, phase) {
-      // hip is highest mid-stance, dips at each footfall: a solid, weighted step
-      var hy = -HIP_H + 1.6 * Math.cos(4 * Math.PI * phase);
-      var hx = 0;
-      var tx = Math.sin(LEAN), ty = -Math.cos(LEAN);         // torso direction
-      var nx = hx + tx * TORSO, ny = hy + ty * TORSO;         // neck
-      var cx = nx + tx * (HEAD_R + 2), cy = ny + ty * (HEAD_R + 2);
-      var sx = nx - tx * 3, sy = ny - ty * 3;                 // shoulder
+    function leg(hx, hy, ft) {
+      var k = ik(hx, hy, ft.x, ft.y, THIGH, SHIN, -1);
+      return {
+        knee: k,
+        d: capsule(hx, hy, k[0], k[1], 5.6, 4.4) + capsule(k[0], k[1], ft.x, ft.y, 4.2, 2.9),
+        boot: shape(BOOT, ft.x, ft.y, ft.ang),
+        // greave edge and thigh plate seam, for the sketched look
+        lines: "M" + f(k[0] + 1.5) + "," + f(k[1] + 4) + "L" + f(ft.x + 1.2) + "," + f(ft.y - 3)
+      };
+    }
 
+    function pose(s, phase, t) {
+      var bob = Math.cos(4 * Math.PI * phase);          // +1 as each foot lands
+      var hx = 0, hy = -HIP_H + 1.6 * bob;
+      var ux = Math.sin(LEAN), uy = -Math.cos(LEAN);     // up the torso
+      var fx = -uy, fy = ux;                             // forward
+      function P(a, b) { return [hx + ux * a + fx * b, hy + uy * a + fy * b]; }
+      function Ps(a, b) { var p = P(a, b); return f(p[0]) + "," + f(p[1]); }
+
+      // legs
       var fa = foot(phase), fb = foot((phase + 0.5) % 1);
-      var ka = ik(hx, hy, fa.x, fa.y, THIGH, SHIN, -1);
-      var kb = ik(hx, hy, fb.x, fb.y, THIGH, SHIN, -1);
+      var near = leg(hx, hy, fa), far = leg(hx, hy, fb);
+      s.nearLeg.setAttribute("d", near.d); s.nearBoot.setAttribute("d", near.boot);
+      s.farLeg.setAttribute("d", far.d); s.farBoot.setAttribute("d", far.boot);
+      circle(s.nearKnee, near.knee[0] + 1.2, near.knee[1], 3.4);
+      circle(s.farKnee, far.knee[0] + 1.2, far.knee[1], 3.2);
+      s.legLines.setAttribute("d", near.lines);
 
-      // back arm swings opposite the near leg, held firm at the elbow
-      var sw = Math.sin(2 * Math.PI * phase) * 0.42;
-      var ex = sx + Math.sin(sw) * UARM, ey = sy + Math.cos(sw) * UARM;
-      var hx2 = ex + Math.sin(sw + 0.45) * FARM, hy2 = ey + Math.cos(sw + 0.45) * FARM;
+      // torso: cuirass, belt and the skirt of plates
+      s.torso.setAttribute("d", "M" + Ps(29, -5) + "Q" + Ps(27.5, -8.6) + " " + Ps(19, -7.6) +
+        "L" + Ps(6.5, -6.2) + "L" + Ps(5.5, 5.6) + "Q" + Ps(11, 10.2) + " " + Ps(21, 9.8) +
+        "Q" + Ps(28.5, 7.8) + " " + Ps(29.6, 2.4) + "Z");
+      s.torsoLines.setAttribute("d", "M" + Ps(8, -5.8) + "Q" + Ps(16, 1) + " " + Ps(20.5, 9.6) +
+        "M" + Ps(27, -6.6) + "Q" + Ps(23, -1) + " " + Ps(26, 8.4) +
+        "M" + Ps(13, -6.6) + "L" + Ps(13.5, -3.5));
+      s.belt.setAttribute("d", "M" + Ps(6.6, -6.4) + "L" + Ps(5.7, 6) + "L" + Ps(3, 6.1) + "L" + Ps(3.4, -6.5) + "Z");
+      var fd = "";
+      for (var k = 0; k < 5; k++) {
+        var b0 = -6.4 + k * 2.6, b1 = b0 + 2.4, len = k % 2 ? -10 : -11.5;
+        fd += "M" + Ps(3.2, b0) + "L" + Ps(3.2, b1) + "L" + Ps(len, b1 + 0.4) + "L" + Ps(len, b0 + 0.4) + "Z";
+      }
+      s.fauld.setAttribute("d", fd);
 
-      // spear arm: hand raised before the face, gripping the upright spear,
-      // lifting slightly on every footfall
-      var bob = 1.4 * Math.cos(4 * Math.PI * phase);
-      var gx = sx + 15, gy = sy - 9 + bob;
-      var el2 = ik(sx, sy, gx, gy, UARM, FARM, 1);
-
-      // back leg + back arm
-      s.back.setAttribute("d",
-        "M" + f(hx) + "," + f(hy) + "L" + f(kb[0]) + "," + f(kb[1]) + "L" + f(fb.x) + "," + f(fb.y) +
-        "l7,0" +
-        "M" + f(sx) + "," + f(sy) + "L" + f(ex) + "," + f(ey) + "L" + f(hx2) + "," + f(hy2));
-      // near leg + torso
-      s.body.setAttribute("d",
-        "M" + f(hx) + "," + f(hy) + "L" + f(ka[0]) + "," + f(ka[1]) + "L" + f(fa.x) + "," + f(fa.y) +
-        "l7,0" +
-        "M" + f(hx) + "," + f(hy) + "L" + f(nx) + "," + f(ny));
-      s.arm.setAttribute("d",
-        "M" + f(sx) + "," + f(sy) + "L" + f(el2[0]) + "," + f(el2[1]) + "L" + f(gx) + "," + f(gy));
-
-      // breastplate along the upper torso
-      var px = -ty, py = tx;   // torso normal
-      function pt(along, side) { return f(hx + tx * along + px * side) + "," + f(hy + ty * along + py * side); }
-      s.plate.setAttribute("d",
-        "M" + pt(TORSO - 1, -6.5) + "L" + pt(TORSO - 1, 7) + "L" + pt(TORSO - 15, 6) +
-        "Q" + pt(7, 2) + " " + pt(8, -1) + "L" + pt(TORSO - 15, -5.5) + "Z");
-      // armoured skirt of plates over the hips
-      s.kilt.setAttribute("d",
-        "M" + pt(5, -5.5) + "L" + pt(5, 6) + "L" + pt(-7, 8) + "L" + pt(-7, 2.5) + "L" + pt(-4, 1) +
-        "L" + pt(-7, -1) + "L" + pt(-7, -7.5) + "Z");
-      s.pauldron.setAttribute("cx", f(sx + 1)); s.pauldron.setAttribute("cy", f(sy + 1));
-
-      s.head.setAttribute("cx", f(cx)); s.head.setAttribute("cy", f(cy));
-      var R = HEAD_R + 1.4;
+      // head held high, steady over the stride
+      var C = P(TORSO + 3 + HEAD, 2.2);
+      var cx = C[0], cy = C[1];
+      function c(x, y) { return f(cx + x) + "," + f(cy + y); }
+      s.neck.setAttribute("d", capsule.apply(null, P(TORSO - 2, 1).concat([cx - 0.5, cy + 5, 3.4, 2.6])));
+      s.head.setAttribute("d", "M" + c(-5, 3) + "Q" + c(-6, -6) + " " + c(1, -6.6) + "Q" + c(6, -5.6) + " " + c(5.6, 0.2) +
+        "L" + c(7.2, 2.6) + "L" + c(5.6, 3.4) + "L" + c(5.8, 5) + "Q" + c(4, 7.8) + " " + c(0.6, 7.4) + "Z");
       s.helm.setAttribute("d",
-        "M" + f(cx - R) + "," + f(cy + 1.5) + "A" + R + "," + R + " 0 0 1 " + f(cx + R) + "," + f(cy + 1.5) +
-        "L" + f(cx + R + 3) + "," + f(cy + 2.5) + "L" + f(cx - R) + "," + f(cy + 2.5) + "Z");
-      s.crest.setAttribute("d",
-        "M" + f(cx + 1) + "," + f(cy - R) + "Q" + f(cx - 6) + "," + f(cy - R - 9) + " " +
-        f(cx - 16) + "," + f(cy - R + 3));
+        "M" + c(-7, 1.6) + "A7,7 0 0 1 " + c(6.4, -0.8) + "L" + c(8.4, 0.2) + "L" + c(6.2, 1.6) + "Z" +
+        "M" + c(-6.8, 1.2) + "L" + c(-9.4, 6.6) + "L" + c(-6.6, 7.4) + "L" + c(-4.4, 2.4) + "Z" +
+        "M" + c(-0.6, 1.6) + "L" + c(2.8, 1.6) + "L" + c(2.4, 8.2) + "L" + c(-0.8, 9.4) + "L" + c(-2.4, 2.8) + "Z");
+      s.helmLines.setAttribute("d", "M" + c(-6, -1.2) + "Q" + c(0, -2.4) + " " + c(6.2, -1.6) +
+        "M" + c(0.2, -6.6) + "L" + c(0.4, -2));
+      s.crest.setAttribute("d", "M" + c(4.6, -5.6) + "Q" + c(1, -18.5) + " " + c(-10, -4.6) +
+        "Q" + c(-1.5, -11.6) + " " + c(2.6, -6.4) + "Z");
 
-      // the spear: upright, tipped slightly forward, shining at its point
-      var lean = 0.06;
-      var bx = gx - Math.sin(lean) * 26, by = gy + Math.cos(lean) * 26;
-      var topx = gx + Math.sin(lean) * 52, topy = gy - Math.cos(lean) * 52;
-      s.spear.setAttribute("x1", f(bx)); s.spear.setAttribute("y1", f(by));
-      s.spear.setAttribute("x2", f(topx)); s.spear.setAttribute("y2", f(topy));
-      var ux = Math.sin(lean), uy = -Math.cos(lean), vx = -uy, vy = ux;
-      var tipx = topx + ux * 13, tipy = topy + uy * 13;
-      s.spearhead.setAttribute("d",
-        "M" + f(tipx) + "," + f(tipy) +
-        "L" + f(topx + vx * 4.5) + "," + f(topy + vy * 4.5) +
-        "L" + f(topx + ux * 3) + "," + f(topy + uy * 3) +
-        "L" + f(topx - vx * 4.5) + "," + f(topy - vy * 4.5) + "Z");
-      s.tip.setAttribute("cx", f(topx + ux * 6)); s.tip.setAttribute("cy", f(topy + uy * 6));
+      // far arm swings with the stride, sword held low and back
+      var sw = -Math.sin(2 * Math.PI * phase) * 0.36;
+      var S2 = P(TORSO - 4.5, -2.5);
+      var ex = S2[0] + Math.sin(sw) * UARM, ey = S2[1] + Math.cos(sw) * UARM;
+      var wa = sw + 0.3;
+      var hx2 = ex + Math.sin(wa) * FARM, hy2 = ey + Math.cos(wa) * FARM;
+      s.farArm.setAttribute("d", capsule(S2[0], S2[1], ex, ey, 3.6, 3) + capsule(ex, ey, hx2, hy2, 3.1, 2.6) +
+        ellipse(hx2, hy2 + 1, 2.6, 2.9, 0));
+      var ba = wa - 0.75;      // blade trailing down and back
+      s.sword.setAttribute("d",
+        shape([[0, -1], [0, 1], [22, 0.9], [25, 0], [22, -0.9]], hx2, hy2 + 1, Math.PI / 2 - ba) +
+        shape([[-0.4, -4], [0.8, -4], [0.8, 4], [-0.4, 4]], hx2, hy2 + 1, Math.PI / 2 - ba) +
+        shape([[-5, -0.9], [-0.5, -0.9], [-0.5, 0.9], [-5, 0.9]], hx2, hy2 + 1, Math.PI / 2 - ba));
 
+      // near arm: shield carried before the body, or the banner held high
+      var S = P(TORSO - 4.5, 0.6);
+      var tgt = s.banner ? P(TORSO - 9 + 0.8 * bob, 11) : P(TORSO - 20 + 0.6 * bob, 9.5);
+      var E = ik(S[0], S[1], tgt[0], tgt[1], UARM, FARM, 1);
+      s.nearArm.setAttribute("d", capsule(S[0], S[1], E[0], E[1], 3.9, 3.2) +
+        capsule(E[0], E[1], tgt[0], tgt[1], 3.4, 2.8));
+      circle(s.elbow, E[0] - 0.4, E[1] + 0.4, 2.8);
+      circle(s.hand, tgt[0] + 0.6, tgt[1], 2.9);
+      var aa = Math.atan2(E[1] - S[1], E[0] - S[0]);
+      var pc = [S[0] + Math.cos(aa) * 2.4, S[1] + Math.sin(aa) * 2.4];
+      s.pauldron.setAttribute("d", ellipse(pc[0], pc[1], 7.2, 6, aa));
+      var pl = "";
+      [1.6, 4].forEach(function (o) {
+        var mx = pc[0] + Math.cos(aa) * o, my = pc[1] + Math.sin(aa) * o;
+        var nx = -Math.sin(aa) * 5.4, ny = Math.cos(aa) * 5.4;
+        pl += "M" + f(mx + nx) + "," + f(my + ny) + "Q" + f(mx + Math.cos(aa) * 1.6) + "," +
+          f(my + Math.sin(aa) * 1.6) + " " + f(mx - nx) + "," + f(my - ny);
+      });
+      s.pauldronLines.setAttribute("d", pl);
+
+      if (s.banner) {
+        var pb = 0.07;                                         // pole tipped slightly forward
+        var vx = Math.sin(pb), vy = -Math.cos(pb);
+        var bx = tgt[0] - vx * 24, by = tgt[1] - vy * 24;
+        var tx = tgt[0] + vx * 52, ty = tgt[1] + vy * 52;
+        s.pole.setAttribute("d", capsule(bx, by, tx, ty, 0.9, 0.8) +
+          shape([[0, 0], [-1.8, -3], [0, -8], [1.8, -3]], tx, ty, pb));
+        // the banner streams back, rippling as they go
+        var top = [], bot = [], N = 12, Lf = 36;
+        for (var i = 0; i <= N; i++) {
+          var u = i / N, wv = Math.sin(t * 3.2 - u * 5.5) * (1 + u * 3.2);
+          var px = tx - vx * 3 - u * Lf, py = ty - vy * 3 + wv + u * 2.5;
+          top.push([px, py]);
+          bot.push([px, py + 15 - u * 2]);
+        }
+        var d = "M" + f(top[0][0]) + "," + f(top[0][1]);
+        for (i = 1; i <= N; i++) d += "L" + f(top[i][0]) + "," + f(top[i][1]);
+        var mid = [(top[N][0] + bot[N][0]) / 2 + 7, (top[N][1] + bot[N][1]) / 2];  // swallowtail notch
+        d += "L" + f(mid[0]) + "," + f(mid[1]);
+        for (i = N; i >= 0; i--) d += "L" + f(bot[i][0]) + "," + f(bot[i][1]);
+        s.flag.setAttribute("d", d + "Z");
+        var fl = "";
+        [4, 8].forEach(function (j) {
+          fl += "M" + f(top[j][0]) + "," + f(top[j][1] + 1) + "L" + f(bot[j][0]) + "," + f(bot[j][1] - 1);
+        });
+        s.flagLines.setAttribute("d", fl);
+      } else {
+        var sa = -0.06 + 0.025 * bob;
+        var sc = [tgt[0] + 3.2, tgt[1] - 1];
+        s.shield.setAttribute("d", shape(SHIELD, sc[0], sc[1], sa));
+        var inner = SHIELD.map(function (p) { return [p[0] * 0.78, p[1] * 0.8]; });
+        s.shieldLines.setAttribute("d", shape(inner, sc[0], sc[1], sa) +
+          shape([[0, -11], [0, 12]], sc[0], sc[1], sa, true));
+        circle(s.boss, sc[0], sc[1] - 1, 2.6);
+      }
+
+      var auraC = P(16, 0);
+      s.aura.setAttribute("cx", f(auraC[0])); s.aura.setAttribute("cy", f(auraC[1] - 6));
       return [fa, fb];
     }
 
@@ -945,32 +1052,32 @@
     function unit() { return BASE_PX * army.size * Math.min(1, Math.max(0.55, Math.min(H / 900, W / 1300))); }
 
     function sync() {
-      while (troops.length < army.count) troops.push(makeSoldier());
+      while (troops.length < army.count) troops.push(makeSoldier(troops.length));
       while (troops.length > army.count) removeSoldier(troops.pop());
     }
 
     function draw() {
       sync();
       var k = unit();
-      var gap = GAP * k, loop = W + gap * Math.max(army.count, 2) + 120 * k;
+      var gap = GAP * k, loop = W + gap * Math.max(army.count, 2) + 140 * k;
       var phase = (dist / CYCLE) % 1;
       // the column keeps formation and wraps round as one body
       for (var i = 0; i < troops.length; i++) {
         var s = troops[i];
         var lead = (dist * k) % loop;
         var x = lead - i * gap;
-        x = ((x % loop) + loop) % loop - 60 * k;
+        x = ((x % loop) + loop) % loop - 70 * k;
         s.g.setAttribute("transform", "translate(" + f(x) + "," + f(HZ) + ") scale(" + k.toFixed(4) + ")");
-        var feet = pose(s, phase);
+        var feet = pose(s, phase, clock + i * 0.4);
         for (var j = 0; j < 2; j++) {
           var e = s.glow[j], ft = feet[j];
           if (ft.stance < 0) { e.setAttribute("opacity", 0); continue; }
           var o = Math.pow(1 - ft.stance, 2);
-          e.setAttribute("cx", f(x + (ft.x + 4) * k));
+          e.setAttribute("cx", f(x + (ft.x + 2.5) * k));
           e.setAttribute("cy", f(HZ + 1));
-          e.setAttribute("rx", f((10 + 10 * ft.stance) * k));
+          e.setAttribute("rx", f((11 + 10 * ft.stance) * k));
           e.setAttribute("ry", f((2.2 + 1.5 * ft.stance) * k));
-          e.setAttribute("opacity", (0.85 * o).toFixed(3));
+          e.setAttribute("opacity", (0.8 * o).toFixed(3));
         }
       }
     }
@@ -978,6 +1085,7 @@
     function frame(ts) {
       var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
       last = ts;
+      clock += dt;
       dist += CYCLE * CADENCE * army.pace * dt;
       draw();
       requestAnimationFrame(frame);
@@ -987,8 +1095,7 @@
     var rt;
     window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { build(); draw(); }, 150); });
     if (still) {
-      dist = 0;
-      // stand the column in the middle of the screen, at attention
+      // stand the column in the middle of the screen
       var tick = function () { dist = (W * 0.45) / unit(); draw(); };
       tick(); setInterval(tick, 500);
     } else requestAnimationFrame(frame);
