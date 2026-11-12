@@ -56,7 +56,11 @@
 
   /* ground, distant hills and the marching column live in one SVG */
   #land { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .soldiers { filter: drop-shadow(0 0 1px rgba(20,12,34,.75)) drop-shadow(0 0 6px rgba(255,205,120,.35)); }
+  .soldiers { filter: drop-shadow(0 0 1px rgba(20,12,34,.75)) drop-shadow(0 0 6px rgba(255,205,120,.4)); }
+  .leg { fill: url(#legHatch); stroke: #f3ead4; stroke-width: 1.25; stroke-linejoin: round; }
+  .leg.far { fill: url(#legHatchFar); stroke: #cfc3a8; }
+  .legline { fill: none; stroke: #f3ead4; stroke-width: .9; stroke-linecap: round; opacity: .75; }
+  .legline.far { opacity: .45; }
   .stepglow { fill: url(#stepGrad); }
 
   /* ── question + verse ── */
@@ -217,6 +221,14 @@
         <stop offset=".58" stop-color="#ffb060" stop-opacity=".7" />
         <stop offset="1" stop-color="#ff7a30" stop-opacity=".25" />
       </linearGradient>
+      <pattern id="legHatch" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(40)">
+        <rect width="3" height="3" fill="#cdb894" fill-opacity=".38" />
+        <line x1="1" y1="0" x2="1" y2="3" stroke="#fff4dc" stroke-width=".8" stroke-opacity=".75" />
+      </pattern>
+      <pattern id="legHatchFar" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(40)">
+        <rect width="3" height="3" fill="#7d6f63" fill-opacity=".45" />
+        <line x1="1" y1="0" x2="1" y2="3" stroke="#e8dcc0" stroke-width=".8" stroke-opacity=".45" />
+      </pattern>
       <radialGradient id="stepGrad">
         <stop offset="0" stop-color="#fff0c0" stop-opacity=".95" />
         <stop offset=".5" stop-color="#ffc870" stop-opacity=".35" />
@@ -744,30 +756,29 @@
   try { starfield(); } catch (e) { /* decorative */ }
 
   // ── the land and the column of soldiers in the armour of light ──────────
-  // Each soldier is a frame-by-frame sprite cut from the reference sheet
-  // (soldiers/*.webp: 200×236 cells, feet anchored at (100, 226)).
+  // Each soldier's body is cut from the reference sheet (soldiers/*.webp,
+  // 200×236, sole at y 226) with the legs removed; the legs are drawn here in
+  // the same sketched style and walked with hip/knee joints so they cross.
   function march() {
     var NS = "http://www.w3.org/2000/svg";
     var svg = byId("land"), column = byId("column"), stepsG = byId("steps");
     var W = 0, H = 0, HZ = 0;
 
-    var CW = 200, CH = 236, AX = 100, AY = 226;
-    var SHEETS = {
-      sword:  { src: "soldiers/sword.webp",  order: [0, 1, 2, 3, 4, 5, 6, 7] },
-      spear:  { src: "soldiers/spear.webp",  order: [0, 1, 2, 3, 4, 5, 6, 7] },
-      banner: { src: "soldiers/banner.webp", order: [0, 3, 1, 4, 2, 6, 5] }
+    var CW = 200, CH = 236, AX = 100, SOLE = 226;
+    // per figure: helmet-to-sole height, hip joint (hidden under the skirt), hip-to-ankle length
+    var ROLE = {
+      sword:  { src: "soldiers/sword.webp",  figH: 205, hip: [92, 132], L: 86 },
+      spear:  { src: "soldiers/spear.webp",  figH: 182, hip: [88, 142], L: 76 },
+      banner: { src: "soldiers/banner.webp", figH: 170, hip: [90, 140], L: 78 }
     };
-    var COUNT = { sword: 8, spear: 8, banner: 7 };
     var ROLES = ["sword", "spear", "sword", "banner", "spear", "sword", "spear", "sword", "banner", "spear"];
-    // helmet-to-sole height of the soldier in each sheet, so all stand equally tall
-    var FIG_H = { sword: 205, spear: 182, banner: 170 };
     var BASE_PX = 140;         // on-screen height at 1×
     var GAP = 0.62;            // spacing between soldiers, in figure heights
     var PACE = 0.5;            // figure heights travelled per second at 1×
-    var FPS = 9;               // sprite frames per second at 1× pace
+    var STRIDE = 0.64;         // ground covered per two steps, in figure heights
 
     var troops = [];
-    var dist = 0, clock = 0, last = 0;
+    var dist = 0, last = 0;
 
     function el(tag, attrs, parent) {
       var e = document.createElementNS(NS, tag);
@@ -776,18 +787,81 @@
       return e;
     }
     function f(n) { return n.toFixed(2); }
-
-    function makeSoldier(index) {
-      var role = ROLES[index % ROLES.length], sh = SHEETS[role];
-      var g = el("g", {}, column);
-      var view = el("svg", { x: -AX, y: -AY, width: CW, height: CH, viewBox: "0 0 " + CW + " " + CH,
-                             overflow: "hidden" }, g);
-      el("image", { href: sh.src, x: 0, y: 0, width: CW * COUNT[role], height: CH,
-                    preserveAspectRatio: "none" }, view);
-      var glow = el("ellipse", { class: "stepglow", rx: 0, ry: 0 }, stepsG);
-      return { g: g, view: view, role: role, shown: -1, glow: glow };
+    function smooth(t) { return t * t * (3 - 2 * t); }
+    function ik(ax, ay, bx, by, l1, l2, side) {
+      var dx = bx - ax, dy = by - ay, d = Math.sqrt(dx * dx + dy * dy);
+      d = Math.max(0.001, Math.min(l1 + l2 - 0.001, d));
+      var base = Math.atan2(dy, dx);
+      var c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+      var ang = base + side * Math.acos(Math.max(-1, Math.min(1, c)));
+      return [ax + Math.cos(ang) * l1, ay + Math.sin(ang) * l1];
     }
-    function removeSoldier(s) { s.g.remove(); s.glow.remove(); }
+    function capsule(ax, ay, bx, by, ra, rb) {
+      var dx = bx - ax, dy = by - ay, L = Math.sqrt(dx * dx + dy * dy) || 0.001;
+      var nx = -dy / L, ny = dx / L;
+      return "M" + f(ax + nx * ra) + "," + f(ay + ny * ra) +
+        "L" + f(bx + nx * rb) + "," + f(by + ny * rb) +
+        "A" + f(rb) + "," + f(rb) + " 0 0 0 " + f(bx - nx * rb) + "," + f(by - ny * rb) +
+        "L" + f(ax - nx * ra) + "," + f(ay - ny * ra) +
+        "A" + f(ra) + "," + f(ra) + " 0 0 0 " + f(ax + nx * ra) + "," + f(ay + ny * ra) + "Z";
+    }
+    function shape(pts, ox, oy, ang, sc) {
+      var c = Math.cos(ang), s = Math.sin(ang), d = "";
+      for (var i = 0; i < pts.length; i++) {
+        var px = pts[i][0] * sc, py = pts[i][1] * sc;
+        d += (i ? "L" : "M") + f(ox + px * c - py * s) + "," + f(oy + px * s + py * c);
+      }
+      return d + "Z";
+    }
+    // armoured boot around the ankle, in leg-length units (x forward, y down)
+    var BOOT = [[-0.07, -0.05], [0.05, -0.06], [0.08, 0.02], [0.2, 0.05], [0.29, 0.08], [0.3, 0.1], [-0.08, 0.1], [-0.09, 0.03]];
+
+    function makeLeg(g, cls) {
+      return { thigh: el("path", { class: "leg " + cls }, g), shin: el("path", { class: "leg " + cls }, g),
+               knee: el("ellipse", { class: "leg " + cls }, g), boot: el("path", { class: "leg " + cls }, g),
+               lines: el("path", { class: "legline " + cls }, g) };
+    }
+    function makeSoldier(index) {
+      var role = ROLES[index % ROLES.length], R = ROLE[role];
+      var g = el("g", {}, column);
+      var inner = el("g", { transform: "translate(" + (-AX) + "," + (-SOLE) + ")" }, g);
+      var s = { g: g, role: role, R: R };
+      s.far = makeLeg(inner, "far");
+      s.near = makeLeg(inner, "");
+      s.body = el("image", { href: R.src, x: 0, y: 0, width: CW, height: CH }, inner);
+      s.glow = [el("ellipse", { class: "stepglow" }, stepsG), el("ellipse", { class: "stepglow" }, stepsG)];
+      return s;
+    }
+    function removeSoldier(s) { s.g.remove(); s.glow[0].remove(); s.glow[1].remove(); }
+
+    // ankle relative to the hip at gait phase p: planted for the first half,
+    // sliding back exactly as fast as the body moves on — so it never skates
+    function foot(p, cyc, L) {
+      var ground = SOLE - 0.1 * L;
+      if (p < 0.5) {
+        var s = p / 0.5;
+        return { x: cyc / 4 - s * cyc / 2, y: ground, ang: 0, stance: s };
+      }
+      var w = (p - 0.5) / 0.5;
+      return { x: -cyc / 4 + smooth(w) * cyc / 2, y: ground - 0.09 * L * Math.sin(Math.PI * w),
+               ang: 0.3 * Math.sin(2 * Math.PI * w), stance: -1 };
+    }
+
+    function drawLeg(leg, hx, hy, ft, L) {
+      var ax = hx + ft.x, ay = ft.y;
+      var k = ik(hx, hy, ax, ay, 0.52 * L, 0.5 * L, -1);
+      leg.thigh.setAttribute("d", capsule(hx, hy, k[0], k[1], 0.14 * L, 0.085 * L));
+      leg.shin.setAttribute("d", capsule(k[0], k[1], ax, ay, 0.085 * L, 0.055 * L));
+      leg.knee.setAttribute("cx", f(k[0] + 0.015 * L)); leg.knee.setAttribute("cy", f(k[1]));
+      leg.knee.setAttribute("rx", f(0.065 * L)); leg.knee.setAttribute("ry", f(0.075 * L));
+      leg.boot.setAttribute("d", shape(BOOT, ax, ay, ft.ang, L));
+      // greave plate seam down the shin, for the sketched look
+      var mx = (k[0] + ax) / 2, my = (k[1] + ay) / 2;
+      leg.lines.setAttribute("d", "M" + f(k[0] + 0.03 * L) + "," + f(k[1] + 0.09 * L) +
+        "Q" + f(mx + 0.045 * L) + "," + f(my) + " " + f(ax + 0.02 * L) + "," + f(ay - 0.07 * L) +
+        "M" + f(hx + 0.02 * L) + "," + f(hy + 0.2 * L) + "L" + f(k[0] + 0.01 * L) + "," + f(k[1] - 0.1 * L));
+      return ax;
+    }
 
     function build() {
       W = svg.clientWidth || window.innerWidth;
@@ -801,7 +875,6 @@
       byId("hillsFar").setAttribute("d", hills(W, HZ, H * 0.026, 5, 0.3));
       byId("hillsNear").setAttribute("d", hills(W, HZ, H * 0.012, 9, 2.1));
     }
-    // a soft range of hills sitting on the horizon
     function hills(w, base, amp, waves, seed) {
       var d = "M0," + f(base + 2), N = 120;
       for (var i = 0; i <= N; i++) {
@@ -813,7 +886,6 @@
       return d + "L" + f(w) + "," + f(base + 2) + "Z";
     }
 
-    // on-screen soldier height: follows the size slider, smaller on small screens
     function figPx() { return BASE_PX * army.size * Math.min(1, Math.max(0.55, Math.min(H / 900, W / 1300))); }
 
     function sync() {
@@ -825,29 +897,34 @@
       sync();
       var fh = figPx();
       var gap = GAP * fh, loop = W + gap * Math.max(army.count, 2) + fh;
-      // everyone steps on the same beat, like one body
-      var beat = Math.floor(clock * FPS);
+      var phase = (dist / STRIDE) % 1;                  // shared: the column marches in step
       var lead = (dist * fh) % loop;
+      var bob = Math.cos(4 * Math.PI * phase);          // +1 as each foot lands
       for (var i = 0; i < troops.length; i++) {
-        var s = troops[i];
+        var s = troops[i], R = s.R, k = fh / R.figH, L = R.L;
+        var cyc = STRIDE * fh / k;                       // stride in this sheet's pixels
         var x = lead - i * gap;
         x = ((x % loop) + loop) % loop - fh * 0.5;
-        var bob = (beat % 2) ? 0 : -0.6;               // a slight lift on alternate beats
-        var k = fh / FIG_H[s.role];
-        s.g.setAttribute("transform", "translate(" + f(x) + "," + f(HZ + bob) + ") scale(" + k.toFixed(4) + ")");
-        var sh = SHEETS[s.role], fr = sh.order[beat % sh.order.length];
-        if (fr !== s.shown) { s.shown = fr; s.view.setAttribute("viewBox", (fr * CW) + " 0 " + CW + " " + CH); }
-        var e = s.glow;
-        e.setAttribute("cx", f(x)); e.setAttribute("cy", f(HZ + 1));
-        e.setAttribute("rx", f(fh * 0.22)); e.setAttribute("ry", f(fh * 0.03));
-        e.setAttribute("opacity", ((beat % 2) ? 0.45 : 0.6).toFixed(2));
+        s.g.setAttribute("transform", "translate(" + f(x) + "," + f(HZ) + ") scale(" + k.toFixed(4) + ")");
+        var dy = 0.018 * L * bob;                        // body settles onto each step
+        s.body.setAttribute("y", f(dy));
+        var hx = R.hip[0], hy = R.hip[1] + dy;
+        var fa = foot(phase, cyc, L), fb = foot((phase + 0.5) % 1, cyc, L);
+        var axA = drawLeg(s.near, hx, hy, fa, L), axB = drawLeg(s.far, hx, hy, fb, L);
+        [[fa, axA], [fb, axB]].forEach(function (p, j) {
+          var e = s.glow[j], ft = p[0];
+          if (ft.stance < 0) { e.setAttribute("opacity", 0); return; }
+          var o = Math.pow(1 - ft.stance, 2);
+          e.setAttribute("cx", f(x + (p[1] - AX + 0.1 * L) * k)); e.setAttribute("cy", f(HZ + 1));
+          e.setAttribute("rx", f((0.16 + 0.12 * ft.stance) * L * k)); e.setAttribute("ry", f(0.035 * L * k));
+          e.setAttribute("opacity", (0.8 * o).toFixed(3));
+        });
       }
     }
 
     function frame(ts) {
       var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
       last = ts;
-      clock += dt * army.pace;
       dist += PACE * army.pace * dt;
       draw();
       requestAnimationFrame(frame);
@@ -857,7 +934,6 @@
     var rt;
     window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { build(); draw(); }, 150); });
     if (still) {
-      // stand the column in the middle of the screen
       var tick = function () { dist = (W * 0.6) / figPx(); draw(); };
       tick(); setInterval(tick, 500);
     } else requestAnimationFrame(frame);
