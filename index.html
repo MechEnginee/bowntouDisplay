@@ -74,13 +74,15 @@
   }
   .question .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
-    font-size: calc(13px * var(--labelScale)); letter-spacing: .32em; font-weight: 500;
-    color: #a9a2cf; margin-bottom: 1.1vh;
+    font-size: calc(14px * var(--labelScale)); letter-spacing: .14em; font-weight: 500;
+    color: #b3acd6; margin-bottom: 1.1vh;
   }
   .question .eyebrow::before, .question .eyebrow::after {
     content: ""; width: 36px; height: 1px; background: linear-gradient(90deg, transparent, #a9a2cf);
   }
   .question .eyebrow::after { transform: scaleX(-1); }
+  .question .eyebrow .theme { font-family: "Noto Serif KR", serif; font-style: italic; font-weight: 600;
+    letter-spacing: .04em; color: var(--gold-soft); text-shadow: 0 0 12px rgba(255,200,110,.35); }
   .question h1 {
     font-family: "Noto Serif KR", serif; font-weight: 700;
     font-size: calc(clamp(20px, 2.5vw, 40px) * var(--labelScale));
@@ -121,6 +123,8 @@
   @media (max-width: 680px) {
     :root { --mq: .68; --horizon: 85%; }
     .question { top: 4vh; }
+    .question .eyebrow { font-size: calc(12px * var(--labelScale)); letter-spacing: .06em; }
+    .question .eyebrow::before, .question .eyebrow::after { width: 14px; }
     #field { top: 40vh; bottom: 30vh; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -257,7 +261,7 @@
   </svg>
 
   <div class="question">
-    <div class="eyebrow">QUESTION</div>
+    <div class="eyebrow">본투워십 11월 예배 <span class="theme">&ldquo;It&rsquo;s time to wake up!&rdquo;</span></div>
     <h1 id="labelQ">내가 버려야 할 어둠의 일은?</h1>
     <div class="verse">
       <p><sup>11</sup>또한 너희가 이 시기를 알거니와 자다가 깰 때가 벌써 되었으니 이는 이제 우리의 구원이 처음 믿을 때보다 가까웠음이라<br />
