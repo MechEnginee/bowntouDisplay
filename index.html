@@ -38,44 +38,25 @@
   .sky {
     position: absolute; inset: 0;
     background: linear-gradient(180deg,
-      #03050f 0%, #070b22 18%, #0f1438 34%, #1f1b4e 48%,
-      #3d2560 58%, #6e3466 66%, #b0505e 72.5%, #e57e4e 76.5%,
-      #ffb35a 79%, #ffd38a 80%);
+      #0d1230 0%, #161c40 16%, #1f2650 32%, #2c3160 44%,
+      #423f6c 53%, #635572 60%, #8e6670 65.5%, #c27a5c 70%,
+      #ec9644 74%, #ffac3e 76.6%, #ff8a2c 78.6%, #e9561c 80%);
   }
   #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-  /* the sun, just breaking the horizon */
-  .sun-wrap {
-    position: absolute; left: 66%; top: var(--horizon);
-    width: 0; height: 0; pointer-events: none;
+  /* no sun disc: just the light spilling along the horizon before sunrise */
+  .glow {
+    position: absolute; left: 0; right: 0; top: 0; height: var(--horizon); pointer-events: none;
+    background:
+      radial-gradient(60% 22% at 58% 100%, rgba(255,214,140,.55) 0%, rgba(255,170,80,.22) 45%, rgba(255,140,60,0) 100%),
+      radial-gradient(120% 36% at 50% 100%, rgba(255,150,70,.25) 0%, rgba(255,120,60,0) 70%);
+    animation: breathe 12s ease-in-out infinite;
   }
-  .sun-halo, .sun-rays, .sun-core { position: absolute; left: 0; top: 0; border-radius: 50%;
-    transform: translate(-50%, -50%); }
-  .sun-halo {
-    width: 150vmax; height: 150vmax;
-    background: radial-gradient(circle, rgba(255,196,110,.42) 0%, rgba(255,150,90,.2) 14%,
-      rgba(200,90,110,.08) 30%, rgba(0,0,0,0) 46%);
-    animation: breathe 9s ease-in-out infinite;
-  }
-  .sun-rays {
-    width: 120vmax; height: 120vmax;
-    background: repeating-conic-gradient(from 0deg,
-      rgba(255,226,160,.13) 0deg 3deg, rgba(255,226,160,0) 3deg 11deg);
-    -webkit-mask: radial-gradient(circle, #000 4%, rgba(0,0,0,.5) 18%, transparent 46%);
-            mask: radial-gradient(circle, #000 4%, rgba(0,0,0,.5) 18%, transparent 46%);
-    animation: spin 240s linear infinite;
-  }
-  .sun-core {
-    width: 22vmin; height: 22vmin;
-    background: radial-gradient(circle, #fffaf0 0%, #fff0c6 38%, #ffd37a 60%, rgba(255,170,80,0) 72%);
-    box-shadow: 0 0 120px 40px rgba(255,190,100,.45);
-  }
-  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
   @keyframes breathe { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
 
   /* ground, distant hills and the marching column live in one SVG */
   #land { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .soldiers { filter: drop-shadow(0 0 1.2px rgba(20,10,40,.95)) drop-shadow(0 0 7px rgba(255,205,120,.55)); }
+  .soldiers { filter: drop-shadow(0 0 1.6px rgba(20,10,30,1)) drop-shadow(0 0 7px rgba(255,205,120,.55)); }
   .limb { fill: none; stroke: #fff4dc; stroke-linecap: round; stroke-linejoin: round; }
   .limb.back { stroke: #d9c7a6; opacity: .62; }
   .armor { fill: url(#armorGrad); stroke: #fff6e0; stroke-linejoin: round; }
@@ -148,7 +129,7 @@
     #field { top: 15vh; bottom: 40vh; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .w, .sun-rays, .sun-halo { animation: none !important; }
+    .w, .glow { animation: none !important; }
   }
 
   /* ── gear + status ── */
@@ -223,33 +204,27 @@
 <div class="stage" id="stage">
   <div class="sky"></div>
   <canvas id="stars" aria-hidden="true"></canvas>
-  <div class="sun-wrap" id="sunWrap" aria-hidden="true">
-    <div class="sun-halo"></div>
-    <div class="sun-rays"></div>
-    <div class="sun-core"></div>
-  </div>
+  <div class="glow" aria-hidden="true"></div>
 
   <svg id="land" aria-hidden="true">
     <defs>
       <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#1a1029" />
-        <stop offset=".35" stop-color="#100a1c" />
-        <stop offset="1" stop-color="#05040b" />
+        <stop offset="0" stop-color="#0d0a14" />
+        <stop offset=".35" stop-color="#0a0810" />
+        <stop offset="1" stop-color="#040308" />
       </linearGradient>
       <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#6a3a5c" />
-        <stop offset="1" stop-color="#3a2142" />
+        <stop offset="0" stop-color="#2a1e2c" />
+        <stop offset="1" stop-color="#1a1320" />
       </linearGradient>
       <linearGradient id="hillNear" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#3a2140" />
-        <stop offset="1" stop-color="#1a1029" />
+        <stop offset="0" stop-color="#110c16" />
+        <stop offset="1" stop-color="#0d0a14" />
       </linearGradient>
       <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#ffb860" stop-opacity="0" />
-        <stop offset=".45" stop-color="#ffcf80" stop-opacity=".55" />
-        <stop offset=".66" stop-color="#fff0c0" stop-opacity="1" />
-        <stop offset=".85" stop-color="#ffcf80" stop-opacity=".55" />
-        <stop offset="1" stop-color="#ffb860" stop-opacity="0" />
+        <stop offset="0" stop-color="#ff7a30" stop-opacity=".25" />
+        <stop offset=".58" stop-color="#ffb060" stop-opacity=".7" />
+        <stop offset="1" stop-color="#ff7a30" stop-opacity=".25" />
       </linearGradient>
       <linearGradient id="armorGrad" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#fff3cc" />
@@ -725,8 +700,8 @@
       var n = Math.round(W * HZ / 3200);
       stars = [];
       for (var i = 0; i < n; i++) {
-        var y = HZ * 0.82 * Math.pow(Math.random(), 1.5);
-        var fade = Math.max(0, 1 - Math.pow(y / (HZ * 0.82), 1.4));   // dawn washes them out
+        var y = HZ * 0.68 * Math.pow(Math.random(), 1.4);
+        var fade = Math.max(0, 1 - Math.pow(y / (HZ * 0.68), 1.6));   // dawn washes them out
         var big = Math.random() < 0.05;
         stars.push({
           x: Math.random() * W, y: y,
@@ -951,8 +926,8 @@
       g.setAttribute("x", 0); g.setAttribute("y", HZ); g.setAttribute("width", W); g.setAttribute("height", H - HZ + 2);
       var rim = byId("groundRim");
       rim.setAttribute("x", 0); rim.setAttribute("y", HZ - 0.8); rim.setAttribute("width", W);
-      byId("hillsFar").setAttribute("d", hills(W, HZ, H * 0.045, 5, 0.3));
-      byId("hillsNear").setAttribute("d", hills(W, HZ, H * 0.022, 9, 2.1));
+      byId("hillsFar").setAttribute("d", hills(W, HZ, H * 0.026, 5, 0.3));
+      byId("hillsNear").setAttribute("d", hills(W, HZ, H * 0.012, 9, 2.1));
     }
     // a soft range of hills sitting on the horizon
     function hills(w, base, amp, waves, seed) {
