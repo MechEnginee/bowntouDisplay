@@ -340,8 +340,8 @@
       <div class="field">
         <label>병사 수</label>
         <div class="slider">
-          <input id="f_troops" type="range" min="1" max="15" step="1" value="5" />
-          <output id="o_troops">5</output>
+          <input id="f_troops" type="range" min="1" max="30" step="1" value="10" />
+          <output id="o_troops">10</output>
         </div>
       </div>
       <div class="field">
@@ -402,11 +402,13 @@
   byId("f_sheetId").value = DEFAULT_SHEET_ID;
 
   var cfg = load();
+  // the column was doubled: settings saved before that get twice the soldiers too
+  if (cfg && !cfg.troopsV2) { cfg.troops = Math.min(30, (cfg.troops || 5) * 2); cfg.troopsV2 = true; save(cfg); }
   var timer = null;
   // key -> { el, count }, rebuilt against the sheet on every poll so rows
   // deleted from the sheet also disappear from the screen.
   var shown = new Map();
-  var DEFAULTS = { maxWords: 24, fontScale: 1, speed: 1, soldier: 1, troops: 5, march: 1,
+  var DEFAULTS = { maxWords: 24, fontScale: 1, speed: 1, soldier: 1, troops: 10, march: 1,
                    labelScale: 1, wordWeight: 400 };
   var MAX_WORDS = DEFAULTS.maxWords;
   var W_STEPS = [400, 500, 600, 700, 800, 900];
@@ -641,7 +643,8 @@
       labelScale: f("labelScale"),
       wordWeight: parseInt(byId("f_wordWeight").value, 10) || DEFAULTS.wordWeight,
       col: byId("f_col").value,
-      label: byId("f_label").value.trim() || DEFAULT_LABEL
+      label: byId("f_label").value.trim() || DEFAULT_LABEL,
+      troopsV2: true
     };
   }
   function loadCols() {
