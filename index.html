@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>빛의 갑옷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --spd: 1;
+    --scale: 1;
+    --mq: 1;
+    --labelScale: 1;
+    --horizon: 80%;          /* where the ground meets the sky */
+    --panel: #161329;
+    --border: rgba(214,204,255,.16);
+    --ink: #ece8fb;
+    --muted: #9790b3;
+    --gold: #f6b54a;
+    --gold-soft: #ffd88a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: #050716;
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+      "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: var(--ink);
+  }
+
+  .stage { position: relative; width: 100%; height: 100vh; overflow: hidden;
+    -webkit-user-select: none; user-select: none; }
+
+  /* ── the sky: deep night overhead, breaking into dawn at the horizon ── */
+  .sky {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      #03050f 0%, #070b22 18%, #0f1438 34%, #1f1b4e 48%,
+      #3d2560 58%, #6e3466 66%, #b0505e 72.5%, #e57e4e 76.5%,
+      #ffb35a 79%, #ffd38a 80%);
+  }
+  #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* the sun, just breaking the horizon */
+  .sun-wrap {
+    position: absolute; left: 66%; top: var(--horizon);
+    width: 0; height: 0; pointer-events: none;
+  }
+  .sun-halo, .sun-rays, .sun-core { position: absolute; left: 0; top: 0; border-radius: 50%;
+    transform: translate(-50%, -50%); }
+  .sun-halo {
+    width: 150vmax; height: 150vmax;
+    background: radial-gradient(circle, rgba(255,196,110,.42) 0%, rgba(255,150,90,.2) 14%,
+      rgba(200,90,110,.08) 30%, rgba(0,0,0,0) 46%);
+    animation: breathe 9s ease-in-out infinite;
+  }
+  .sun-rays {
+    width: 120vmax; height: 120vmax;
+    background: repeating-conic-gradient(from 0deg,
+      rgba(255,226,160,.13) 0deg 3deg, rgba(255,226,160,0) 3deg 11deg);
+    -webkit-mask: radial-gradient(circle, #000 4%, rgba(0,0,0,.5) 18%, transparent 46%);
+            mask: radial-gradient(circle, #000 4%, rgba(0,0,0,.5) 18%, transparent 46%);
+    animation: spin 240s linear infinite;
+  }
+  .sun-core {
+    width: 22vmin; height: 22vmin;
+    background: radial-gradient(circle, #fffaf0 0%, #fff0c6 38%, #ffd37a 60%, rgba(255,170,80,0) 72%);
+    box-shadow: 0 0 120px 40px rgba(255,190,100,.45);
+  }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+  @keyframes breathe { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
+
+  /* ground, distant hills and the marching column live in one SVG */
+  #land { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .soldiers { filter: drop-shadow(0 0 1.2px rgba(20,10,40,.95)) drop-shadow(0 0 7px rgba(255,205,120,.55)); }
+  .limb { fill: none; stroke: #fff4dc; stroke-linecap: round; stroke-linejoin: round; }
+  .limb.back { stroke: #d9c7a6; opacity: .62; }
+  .armor { fill: url(#armorGrad); stroke: #fff6e0; stroke-linejoin: round; }
+  .head { fill: #22163a; stroke: #fff4dc; }
+  .crest { fill: none; stroke: #ffe3a0; stroke-linecap: round; }
+  .spear { stroke: #fff1cf; stroke-linecap: round; }
+  .spearhead { fill: #fff8e6; }
+  .tipglow { fill: url(#tipGrad); }
+  .stepglow { fill: url(#stepGrad); }
+
+  /* ── question + verse ── */
+  .question {
+    position: absolute; left: 0; right: 0; top: 5.5vh; z-index: 6; text-align: center;
+    pointer-events: none; padding: 0 16px;
+  }
+  .question .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: calc(13px * var(--labelScale)); letter-spacing: .32em; font-weight: 500;
+    color: #a9a2cf; margin-bottom: 1.1vh;
+  }
+  .question .eyebrow::before, .question .eyebrow::after {
+    content: ""; width: 36px; height: 1px; background: linear-gradient(90deg, transparent, #a9a2cf);
+  }
+  .question .eyebrow::after { transform: scaleX(-1); }
+  .question h1 {
+    font-family: "Noto Serif KR", serif; font-weight: 700;
+    font-size: calc(clamp(24px, 3.4vw, 54px) * var(--labelScale));
+    letter-spacing: .06em; color: #f3efff;
+    text-shadow: 0 0 24px rgba(160,140,255,.35), 0 2px 10px rgba(0,0,0,.6);
+  }
+
+  .verse {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+    height: calc(100% - var(--horizon)); padding: 0 24px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; pointer-events: none;
+  }
+  .verse p {
+    font-family: "Noto Serif KR", serif; font-weight: 400; line-height: 1.75;
+    font-size: calc(clamp(13px, 1.32vw, 22px) * var(--labelScale));
+    color: #d8cfe6; max-width: 72em; word-break: keep-all;
+  }
+  .verse p b { font-weight: 700; color: var(--gold-soft);
+    text-shadow: 0 0 14px rgba(255,200,110,.45); }
+  .verse cite {
+    display: block; margin-top: .9vh; font-style: normal; letter-spacing: .3em;
+    font-size: calc(clamp(11px, .95vw, 15px) * var(--labelScale)); color: #a19bbd;
+  }
+  .verse sup { font-size: .62em; color: #a19bbd; margin-right: .25em; font-family: "Noto Sans KR", sans-serif; }
+
+  /* ── floating words: "the deeds of darkness", drifting in the night sky ── */
+  #field { position: absolute; left: 0; right: 0; top: 17vh; bottom: 36vh; z-index: 4; }
+  .w {
+    position: absolute; white-space: nowrap; will-change: transform, opacity;
+    opacity: 0;
+    font-size: calc(var(--base, 22px) * var(--scale) * var(--grow, 1) * var(--mq));
+    text-shadow: 0 0 18px rgba(130,110,220,.35), 0 1px 6px rgba(0,0,0,.55);
+    transition: opacity 1.1s ease, font-size .9s cubic-bezier(.34, 1.4, .64, 1);
+  }
+  .w.show { opacity: var(--vis, .9); }
+  @keyframes d1 { 0%,100%{transform:translate(0,0) rotate(0)} 25%{transform:translate(14px,-18px) rotate(1deg)}
+    50%{transform:translate(-10px,10px) rotate(-1deg)} 75%{transform:translate(8px,16px) rotate(.5deg)} }
+  @keyframes d2 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-16px,12px)} 66%{transform:translate(12px,-14px)} }
+  @keyframes d3 { 0%,100%{transform:translate(0,0) rotate(0)} 20%{transform:translate(10px,14px) rotate(-1deg)}
+    50%{transform:translate(-14px,-8px) rotate(1deg)} 80%{transform:translate(6px,-12px) rotate(0)} }
+
+  @media (max-width: 680px) {
+    :root { --mq: .68; --horizon: 76%; }
+    .question { top: 4vh; }
+    #field { top: 15vh; bottom: 40vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .w, .sun-rays, .sun-halo { animation: none !important; }
+  }
+
+  /* ── gear + status ── */
+  #gear {
+    position: fixed; top: 16px; right: 16px; z-index: 30; width: 44px; height: 44px;
+    border-radius: 50%; border: 1px solid var(--border); background: rgba(22,19,41,.7);
+    color: var(--ink); font-size: 19px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.35);
+    transition: transform .25s, opacity .3s; opacity: .55;
+  }
+  #gear:hover { transform: rotate(45deg); opacity: 1; }
+  #status {
+    display: flex; align-items: center; font-size: 12.5px; color: var(--muted);
+    background: rgba(255,255,255,.04); padding: 8px 12px; margin-bottom: 18px;
+    border-radius: 10px; border: 1px solid var(--border);
+  }
+  #status .d { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #5c657d; margin-right: 6px; vertical-align: middle; }
+  #status.live .d  { background: #5ec27f; box-shadow: 0 0 8px #5ec27f; }
+  #status.error .d { background: #e0705a; box-shadow: 0 0 8px #e0705a; }
+
+  /* ── settings panel ── */
+  #settings { position: fixed; inset: 0; z-index: 40; display: none; align-items: center;
+    justify-content: center; background: rgba(4,4,14,.6); backdrop-filter: blur(3px); }
+  #settings.open { display: flex; }
+  .panel { width: min(560px, 92vw); max-height: 90vh; overflow-y: auto; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 18px; padding: 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .panel h2 { font-size: 21px; margin-bottom: 4px; }
+  .panel .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 18px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: #cbc4e2; }
+  .field .hint { font-weight: 400; color: var(--muted); }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: #0e0c1d; color: var(--ink); font-size: 14px; font-family: inherit;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--gold); }
+  .row { display: flex; gap: 12px; } .row .field { flex: 1; min-width: 0; }
+  .slider { display: flex; align-items: center; gap: 10px; }
+  .slider input[type=range] {
+    flex: 1; -webkit-appearance: none; appearance: none; height: 4px; padding: 0;
+    border: none; border-radius: 999px; background: rgba(214,204,255,.22); cursor: pointer;
+  }
+  .slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gold); border: none; cursor: pointer;
+  }
+  .slider input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer;
+  }
+  .slider input[type=range]:focus { outline: 2px solid var(--gold); outline-offset: 4px; }
+  .slider output {
+    min-width: 46px; text-align: right; font-size: 13px; font-weight: 700;
+    color: var(--gold); font-variant-numeric: tabular-nums;
+  }
+  .box { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: rgba(246,181,74,.07); }
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  button.primary { flex: 1; padding: 12px; border-radius: 11px; border: none; background: var(--gold);
+    color: #211703; font-weight: 800; font-size: 15px; cursor: pointer; }
+  button.primary:hover { background: var(--gold-soft); }
+  button.ghost { padding: 12px 16px; border-radius: 11px; border: 1px solid var(--border);
+    background: transparent; color: var(--ink); font-weight: 600; cursor: pointer; }
+  .guide { margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: rgba(246,181,74,.07);
+    border: 1px solid rgba(246,181,74,.22); font-size: 12.5px; line-height: 1.7; color: #bdb6d2; }
+  .guide b { color: var(--ink); }
+  .guide code { background: rgba(255,255,255,.08); padding: 1px 5px; border-radius: 5px; font-size: 11.5px; }
+  .err { color: #f0a08c; font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="sky"></div>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="sun-wrap" id="sunWrap" aria-hidden="true">
+    <div class="sun-halo"></div>
+    <div class="sun-rays"></div>
+    <div class="sun-core"></div>
+  </div>
+
+  <svg id="land" aria-hidden="true">
+    <defs>
+      <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1a1029" />
+        <stop offset=".35" stop-color="#100a1c" />
+        <stop offset="1" stop-color="#05040b" />
+      </linearGradient>
+      <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6a3a5c" />
+        <stop offset="1" stop-color="#3a2142" />
+      </linearGradient>
+      <linearGradient id="hillNear" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3a2140" />
+        <stop offset="1" stop-color="#1a1029" />
+      </linearGradient>
+      <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ffb860" stop-opacity="0" />
+        <stop offset=".45" stop-color="#ffcf80" stop-opacity=".55" />
+        <stop offset=".66" stop-color="#fff0c0" stop-opacity="1" />
+        <stop offset=".85" stop-color="#ffcf80" stop-opacity=".55" />
+        <stop offset="1" stop-color="#ffb860" stop-opacity="0" />
+      </linearGradient>
+      <linearGradient id="armorGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff3cc" />
+        <stop offset=".55" stop-color="#ffd27a" />
+        <stop offset="1" stop-color="#f0a23c" />
+      </linearGradient>
+      <radialGradient id="tipGrad">
+        <stop offset="0" stop-color="#fff6d8" stop-opacity=".95" />
+        <stop offset=".4" stop-color="#ffd27a" stop-opacity=".35" />
+        <stop offset="1" stop-color="#ffd27a" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="stepGrad">
+        <stop offset="0" stop-color="#fff0c0" stop-opacity=".95" />
+        <stop offset=".5" stop-color="#ffc870" stop-opacity=".35" />
+        <stop offset="1" stop-color="#ffc870" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <path id="hillsFar" fill="url(#hillFar)" />
+    <path id="hillsNear" fill="url(#hillNear)" />
+    <rect id="ground" fill="url(#groundGrad)" />
+    <rect id="groundRim" height="1.6" fill="url(#rim)" />
+    <g id="steps"></g>
+    <g id="column" class="soldiers"></g>
+  </svg>
+
+  <div class="question">
+    <div class="eyebrow">QUESTION</div>
+    <h1 id="labelQ">내가 버려야 할 어둠의 일은?</h1>
+  </div>
+
+  <div id="field"></div>
+
+  <div class="verse">
+    <p><sup>11</sup>또한 너희가 이 시기를 알거니와 자다가 깰 때가 벌써 되었으니 이는 이제 우리의 구원이 처음 믿을 때보다 가까웠음이라<br />
+      <sup>12</sup>밤이 깊고 낮이 가까웠으니 그러므로 우리가 <b>어둠의 일을 벗고 빛의 갑옷을 입자</b></p>
+    <cite>로마서 13:11–12</cite>
+  </div>
+</div>
+
+<button id="gear" title="설정">⚙️</button>
+
+<div id="settings">
+  <div class="panel">
+    <h2>연결 설정</h2>
+    <p class="sub">구글시트 한 열의 응답이 새벽 하늘에 떠다닙니다.</p>
+    <div id="status"><span class="d"></span><span id="statusText">설정이 필요합니다</span></div>
+
+    <div class="field">
+      <label>Google API 키 <span class="hint">(Sheets API 키)</span></label>
+      <input id="f_apiKey" type="text" placeholder="AIza..." autocomplete="off" />
+    </div>
+    <div class="field">
+      <label>스프레드시트 ID <span class="hint">(시트 URL 의 /d/ 와 /edit 사이)</span></label>
+      <input id="f_sheetId" type="text" placeholder="1AbC...xyz" autocomplete="off" />
+    </div>
+    <div class="row">
+      <div class="field"><label>탭(시트) 이름</label><input id="f_tab" type="text" placeholder="설문지 응답 시트1" /></div>
+      <div class="field"><label>폴링 간격(초)</label><input id="f_interval" type="number" min="2" value="5" /></div>
+    </div>
+
+    <div class="box" style="margin-bottom:14px">
+      <div class="field" style="margin:0 0 8px">
+        <label>표시할 열</label>
+        <select id="f_col"><option value="">열 불러오기 필요</option></select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>질문 문구</label>
+        <input id="f_label" type="text" value="내가 버려야 할 어둠의 일은?" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>화면 단어 개수 <span class="hint">(중복 제외)</span></label>
+        <div class="slider">
+          <input id="f_maxWords" type="range" min="4" max="300" step="1" value="24" />
+          <output id="o_maxWords">24</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>글자 크기 <span class="hint">(전체 배율)</span></label>
+        <div class="slider">
+          <input id="f_fontScale" type="range" min="0.6" max="2" step="0.05" value="1" />
+          <output id="o_fontScale">1.00×</output>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>떠다니는 속도 <span class="hint">(느리게 ↔ 빠르게)</span></label>
+        <div class="slider">
+          <input id="f_speed" type="range" min="0.2" max="3" step="0.05" value="1" />
+          <output id="o_speed">1.00×</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>병사 크기 <span class="hint">(보폭도 함께)</span></label>
+        <div class="slider">
+          <input id="f_soldier" type="range" min="0.4" max="3" step="0.05" value="1" />
+          <output id="o_soldier">1.00×</output>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>병사 수</label>
+        <div class="slider">
+          <input id="f_troops" type="range" min="1" max="15" step="1" value="5" />
+          <output id="o_troops">5</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>행진 속도</label>
+        <div class="slider">
+          <input id="f_march" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+          <output id="o_march">1.00×</output>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>질문·말씀 크기</label>
+        <div class="slider">
+          <input id="f_labelScale" type="range" min="0.6" max="2" step="0.05" value="1" />
+          <output id="o_labelScale">1.00×</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>단어 굵기 <span class="hint">(반복될수록 더 굵어짐)</span></label>
+        <select id="f_wordWeight">
+          <option value="400">보통</option>
+          <option value="500">조금 굵게</option>
+          <option value="600">굵게</option>
+          <option value="700">더 굵게</option>
+          <option value="800">아주 굵게</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="err" id="formErr"></div>
+    <div class="actions">
+      <button class="ghost" id="btnLoadCols">열 불러오기</button>
+      <button class="primary" id="btnSave">저장하고 시작</button>
+    </div>
+
+    <div class="guide">
+      <b>설정 순서</b> — ① 구글폼 응답을 시트에 연결하고 <b>공유 → 링크가 있는 모든 사용자(뷰어)</b>로
+      설정 ② <code>console.cloud.google.com</code> 에서 <b>Google Sheets API</b> 사용 설정 후
+      <b>API 키</b> 발급 ③ 위 칸을 채우고 <b>열 불러오기 → “내가 버려야 할 어둠의 일은?” 열 선택 → 저장</b>.
+      화면을 더블클릭하면 테스트 단어가 뜹니다.
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var LS = "dawn_armor_cfg_v1";
+  var DEFAULT_API_KEY = "";   // 설정창에서 입력 (localStorage 에 저장됨)
+  var DEFAULT_SHEET_ID = "";
+  var DEFAULT_LABEL = "내가 버려야 할 어둠의 일은?";
+  var byId = function (id) { return document.getElementById(id); };
+  var field = byId("field");
+  var statusEl = byId("status"), statusText = byId("statusText"), formErr = byId("formErr");
+  byId("f_apiKey").value = DEFAULT_API_KEY;
+  byId("f_sheetId").value = DEFAULT_SHEET_ID;
+
+  var cfg = load();
+  var timer = null;
+  // key -> { el, count }, rebuilt against the sheet on every poll so rows
+  // deleted from the sheet also disappear from the screen.
+  var shown = new Map();
+  var DEFAULTS = { maxWords: 24, fontScale: 1, speed: 1, soldier: 1, troops: 5, march: 1,
+                   labelScale: 1, wordWeight: 400 };
+  var MAX_WORDS = DEFAULTS.maxWords;
+  var W_STEPS = [400, 500, 600, 700, 800, 900];
+  var weightBase = DEFAULTS.wordWeight;
+  // read live by the march animation
+  var army = { size: DEFAULTS.soldier, count: DEFAULTS.troops, pace: DEFAULTS.march };
+
+  // pale, smoky night tones — these are the things being left behind
+  var PALETTE = ["#e4def6", "#cfc7ea", "#bdb4dc", "#aba2cf", "#d8cde6", "#c4b6d8", "#9f97c2"];
+  var DRIFT = ["d1", "d2", "d3"];
+
+  function load() { try { return JSON.parse(localStorage.getItem(LS)) || null; } catch (e) { return null; } }
+  function save(c) { try { localStorage.setItem(LS, JSON.stringify(c)); } catch (e) {} }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function apiUrl(id, range, key) {
+    return "https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(id) +
+      "/values/" + encodeURIComponent(range) + "?key=" + encodeURIComponent(key) +
+      "&majorDimension=ROWS&valueRenderOption=FORMATTED_VALUE";
+  }
+  function fetchValues(c) {
+    var range = c.tab ? c.tab : "A:ZZ";
+    return fetch(apiUrl(c.sheetId, range, c.apiKey)).then(function (r) {
+      return r.json().then(function (body) {
+        if (!r.ok) throw new Error((body && body.error && body.error.message) || ("HTTP " + r.status));
+        return body.values || [];
+      });
+    });
+  }
+
+  // 1x → 1.00, 2x → 1.45, 4x → 1.90, 8x → 2.35, capped
+  function styleByCount(el, count) {
+    var grow = Math.min(2.8, 1 + Math.log(count) / Math.LN2 * 0.45);
+    el.style.setProperty("--grow", grow.toFixed(3));
+    var base = W_STEPS.indexOf(weightBase);
+    if (base < 0) base = 0;
+    var bump = count >= 3 ? 2 : count >= 2 ? 1 : 0;
+    el.style.fontWeight = W_STEPS[Math.min(W_STEPS.length - 1, base + bump)];
+    el.style.setProperty("--vis", Math.min(1, 0.62 + (count - 1) * 0.12).toFixed(2));
+    el.title = count > 1 ? el.textContent + " ×" + count : el.textContent;
+  }
+
+  var testWords = [];   // double-click samples: not from the sheet, but still take up room
+  function occupied() {
+    var out = testWords.filter(function (t) { return t._box; }).map(function (t) { return t._box; });
+    shown.forEach(function (rec) { if (rec.el && rec.el._box) out.push(rec.el._box); });
+    return out;
+  }
+
+  // try a handful of spots and keep the one that covers existing words least
+  function placeWord(el, w, h) {
+    var HW = field.clientWidth, HH = field.clientHeight;
+    if (!(HW > 0) || !(HH > 0) || !(w > 0)) {
+      el.style.left = rand(2, 86) + "%";
+      el.style.top = rand(5, 88) + "%";
+      return;
+    }
+    var EDGE = 10, M = 8;
+    var maxX = Math.max(0, HW - w - EDGE * 2), maxY = Math.max(0, HH - h - EDGE * 2);
+    var taken = occupied();
+    var bx = EDGE, by = EDGE, bestScore = Infinity;
+    for (var i = 0; i < 40; i++) {
+      var x = EDGE + Math.random() * maxX, y = EDGE + Math.random() * maxY, score = 0;
+      for (var j = 0; j < taken.length; j++) {
+        var b = taken[j];
+        var ox = Math.min(x + w + M, b.x + b.w) - Math.max(x - M, b.x);
+        var oy = Math.min(y + h + M, b.y + b.h) - Math.max(y - M, b.y);
+        if (ox > 0 && oy > 0) score += ox * oy;
+      }
+      if (score < bestScore) { bestScore = score; bx = x; by = y; }
+      if (score === 0) break;
+    }
+    el.style.left = Math.round(bx) + "px";
+    el.style.top = Math.round(by) + "px";
+    el._box = { x: bx, y: by, w: w, h: h };
+  }
+
+  function makeWord(text, count) {
+    var el = document.createElement("span");
+    el.className = "w";
+    el.textContent = text;
+    el.style.setProperty("--base", rand(19, 30).toFixed(1) + "px");
+    el.style.color = pick(PALETTE);
+    var drift = pick(DRIFT), dd = rand(18, 30).toFixed(1);
+    el.style.animation = drift + " calc(var(--spd)*" + dd + "s) ease-in-out infinite";
+    styleByCount(el, count);
+    el.style.visibility = "hidden";
+    field.appendChild(el);
+    placeWord(el, el.offsetWidth, el.offsetHeight);
+    el.style.visibility = "";
+    requestAnimationFrame(function () { el.classList.add("show"); });
+    return el;
+  }
+
+  function fadeOut(el) {
+    if (!el) return;
+    el.classList.remove("show");
+    setTimeout(function () { el.remove(); }, 1200);
+  }
+
+  function clearWords() {
+    shown.forEach(function (rec) { if (rec.el) rec.el.remove(); });
+    shown.clear();
+  }
+
+  // identical answers merge into one word that carries a count
+  function desiredFrom(data, colIdx) {
+    var byKey = {};
+    for (var i = 0; i < data.length; i++) {
+      var raw = (data[i][colIdx] || "").trim();
+      if (!raw) continue;
+      var text = raw.replace(/\s+/g, " ");
+      var key = text.toLowerCase();
+      if (byKey[key]) { byKey[key].count++; byKey[key].last = i; }
+      else byKey[key] = { key: key, text: text, count: 1, last: i };
+    }
+    var list = Object.keys(byKey).map(function (k) { return byKey[k]; });
+    list.sort(function (a, b) { return a.last - b.last; });
+    return list.slice(Math.max(0, list.length - MAX_WORDS));
+  }
+
+  // diff the screen against the sheet: drop what's gone, add what's new,
+  // resize what changed count, leave the rest drifting without flicker
+  function reconcile(desired) {
+    var want = {};
+    desired.forEach(function (d) { want[d.key] = true; });
+    var gone = [];
+    shown.forEach(function (rec, key) { if (!want[key]) gone.push(key); });
+    gone.forEach(function (key) { fadeOut(shown.get(key).el); shown.delete(key); });
+
+    var step = Math.max(25, Math.min(220, Math.round(4000 / Math.max(1, desired.length))));
+    var added = 0;
+    desired.forEach(function (d) {
+      var rec = shown.get(d.key);
+      if (!rec) {
+        var delay = added++ * step;
+        shown.set(d.key, { el: null, count: d.count });
+        (function (item) {
+          setTimeout(function () {
+            var cur = shown.get(item.key);
+            if (!cur) return;
+            cur.el = makeWord(item.text, cur.count);
+          }, delay);
+        })(d);
+      } else if (rec.count !== d.count) {
+        rec.count = d.count;
+        if (rec.el) {
+          styleByCount(rec.el, d.count);
+          (function (r) {
+            setTimeout(function () {
+              if (r.el && r.el._box) { r.el._box.w = r.el.offsetWidth; r.el._box.h = r.el.offsetHeight; }
+            }, 950);
+          })(rec);
+        }
+      }
+    });
+  }
+
+  function num(c, k) { return (c && c[k]) || DEFAULTS[k]; }
+
+  function applyDisplay(c) {
+    var root = document.documentElement.style;
+    root.setProperty("--scale", num(c, "fontScale"));
+    root.setProperty("--spd", (1 / num(c, "speed")).toFixed(3));
+    root.setProperty("--labelScale", num(c, "labelScale"));
+    army.size = num(c, "soldier");
+    army.count = num(c, "troops");
+    army.pace = num(c, "march");
+    weightBase = num(c, "wordWeight");
+    MAX_WORDS = num(c, "maxWords");
+    shown.forEach(function (rec) { if (rec.el) styleByCount(rec.el, rec.count); });
+    var keys = Array.from(shown.keys());
+    for (var i = 0; i < keys.length - MAX_WORDS; i++) {
+      fadeOut(shown.get(keys[i]).el);
+      shown.delete(keys[i]);
+    }
+  }
+
+  function restart() {
+    if (timer) { clearInterval(timer); timer = null; }
+    clearWords();
+    applyDisplay(cfg);
+    byId("labelQ").textContent = (cfg && cfg.label) || DEFAULT_LABEL;
+    if (!cfg) { setStatus("idle", "설정이 필요합니다"); return; }
+    setStatus("connecting", "연결 중…");
+    poll();
+    timer = setInterval(poll, cfg.interval * 1000);
+  }
+
+  function poll() {
+    if (!cfg) return;
+    fetchValues(cfg).then(function (rows) {
+      setStatus("live", "실시간 연결됨 · " + cfg.interval + "초");
+      if (!rows.length) return;
+      var ci = rows[0].indexOf(cfg.col);
+      if (ci === -1) { setStatus("error", "지정한 열을 찾을 수 없습니다"); return; }
+      reconcile(desiredFrom(rows.slice(1), ci));
+    }).catch(function (e) { setStatus("error", "오류: " + e.message); });
+  }
+
+  function setStatus(state, text) { statusEl.className = state; statusText.textContent = text; }
+
+  function openSettings() {
+    byId("settings").classList.add("open");
+    if (cfg) {
+      byId("f_apiKey").value = cfg.apiKey || DEFAULT_API_KEY;
+      byId("f_sheetId").value = cfg.sheetId || DEFAULT_SHEET_ID;
+      byId("f_tab").value = cfg.tab || "";
+      byId("f_interval").value = cfg.interval || 5;
+      ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "wordWeight"]
+        .forEach(function (k) { byId("f_" + k).value = num(cfg, k); });
+      byId("f_label").value = cfg.label || DEFAULT_LABEL;
+      if (cfg.col) setOne("f_col", cfg.col);
+    }
+  }
+  function setOne(id, val) {
+    var sel = byId(id); sel.innerHTML = "";
+    var o = document.createElement("option"); o.value = val; o.textContent = val; o.selected = true;
+    sel.appendChild(o);
+  }
+  function readForm() {
+    var f = function (k) { return parseFloat(byId("f_" + k).value) || DEFAULTS[k]; };
+    return {
+      apiKey: byId("f_apiKey").value.trim(),
+      sheetId: byId("f_sheetId").value.trim(),
+      tab: byId("f_tab").value.trim(),
+      interval: Math.max(2, parseInt(byId("f_interval").value, 10) || 5),
+      maxWords: Math.max(4, Math.round(f("maxWords"))),
+      fontScale: f("fontScale"), speed: f("speed"),
+      soldier: f("soldier"), troops: Math.round(f("troops")), march: f("march"),
+      labelScale: f("labelScale"),
+      wordWeight: parseInt(byId("f_wordWeight").value, 10) || DEFAULTS.wordWeight,
+      col: byId("f_col").value,
+      label: byId("f_label").value.trim() || DEFAULT_LABEL
+    };
+  }
+  function loadCols() {
+    formErr.textContent = "";
+    var c = readForm();
+    if (!c.apiKey || !c.sheetId) { formErr.textContent = "API 키와 스프레드시트 ID를 먼저 입력하세요."; return; }
+    byId("btnLoadCols").textContent = "불러오는 중…";
+    fetchValues(c).then(function (rows) {
+      byId("btnLoadCols").textContent = "열 불러오기";
+      if (!rows.length) { formErr.textContent = "시트에 데이터가 없습니다."; return; }
+      var headers = rows[0], sel = byId("f_col"), cur = cfg ? cfg.col : "";
+      sel.innerHTML = "";
+      var guess = null;
+      headers.forEach(function (h) {
+        var name = (h || "").trim(); if (!name) return;
+        var o = document.createElement("option"); o.value = name; o.textContent = name;
+        if (name === cur) o.selected = true;
+        if (!guess && /어둠/.test(name)) guess = o;   // pre-pick the question column
+        sel.appendChild(o);
+      });
+      if (!cur && guess) guess.selected = true;
+      formErr.textContent = "✓ " + headers.length + "개 열을 찾았습니다. 표시할 열을 고르세요.";
+    }).catch(function (e) { byId("btnLoadCols").textContent = "열 불러오기"; formErr.textContent = "오류: " + e.message; });
+  }
+  function doSave() {
+    formErr.textContent = "";
+    var c = readForm();
+    if (!c.apiKey || !c.sheetId) { formErr.textContent = "API 키와 시트 ID는 필수입니다."; return; }
+    if (!c.col) { formErr.textContent = "표시할 열을 선택하세요."; return; }
+    cfg = c; save(cfg); byId("settings").classList.remove("open"); restart();
+  }
+
+  // sliders preview live behind the dialog
+  var SLIDERS = { maxWords: 0, fontScale: 2, speed: 2, soldier: 2, troops: 0, march: 2, labelScale: 2 };
+  function syncSliders(live) {
+    var c = {};
+    Object.keys(SLIDERS).forEach(function (k) {
+      var v = parseFloat(byId("f_" + k).value);
+      c[k] = v;
+      byId("o_" + k).textContent = SLIDERS[k] ? v.toFixed(2) + "×" : String(v);
+    });
+    c.wordWeight = parseInt(byId("f_wordWeight").value, 10);
+    if (live) applyDisplay(c);
+  }
+  Object.keys(SLIDERS).forEach(function (k) {
+    byId("f_" + k).addEventListener("input", function () { syncSliders(true); });
+  });
+  byId("f_wordWeight").addEventListener("change", function () { syncSliders(true); });
+
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ── stars: dense overhead, thinning out as the dawn rises ───────────────
+  function starfield() {
+    var cv = byId("stars"), ctx = cv.getContext("2d");
+    var stars = [], W = 0, H = 0, HZ = 0, dpr = 1, morning = null;
+
+    function build() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = cv.clientWidth; H = cv.clientHeight;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      HZ = H * parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--horizon")) / 100;
+      var n = Math.round(W * HZ / 3200);
+      stars = [];
+      for (var i = 0; i < n; i++) {
+        var y = HZ * 0.82 * Math.pow(Math.random(), 1.5);
+        var fade = Math.max(0, 1 - Math.pow(y / (HZ * 0.82), 1.4));   // dawn washes them out
+        var big = Math.random() < 0.05;
+        stars.push({
+          x: Math.random() * W, y: y,
+          r: big ? rand(1.2, 1.9) : rand(0.35, 1.1),
+          a: fade * (big ? 1 : rand(0.35, 0.95)),
+          tw: rand(0.6, 2.4), ph: Math.random() * 6.28,
+          warm: Math.random() < 0.18, big: big
+        });
+      }
+      // the morning star, keeping watch on the far side of the sunrise
+      morning = { x: W * 0.2, y: HZ * 0.42 };
+    }
+
+    function draw(t) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        var a = s.a * (still ? 0.85 : 0.6 + 0.4 * Math.sin(t * s.tw + s.ph));
+        if (a <= 0.02) continue;
+        ctx.globalAlpha = a;
+        ctx.fillStyle = s.warm ? "#ffe2b8" : "#eef0ff";
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.2832); ctx.fill();
+        if (s.big) {
+          ctx.globalAlpha = a * 0.5;
+          ctx.fillRect(s.x - s.r * 4, s.y - 0.4, s.r * 8, 0.8);
+          ctx.fillRect(s.x - 0.4, s.y - s.r * 4, 0.8, s.r * 8);
+        }
+      }
+      // morning star with a soft cross of light
+      var p = still ? 1 : 0.85 + 0.15 * Math.sin(t * 0.9);
+      var g = ctx.createRadialGradient(morning.x, morning.y, 0, morning.x, morning.y, 26);
+      g.addColorStop(0, "rgba(255,250,235," + (0.95 * p) + ")");
+      g.addColorStop(0.18, "rgba(255,236,200," + (0.5 * p) + ")");
+      g.addColorStop(1, "rgba(255,236,200,0)");
+      ctx.globalAlpha = 1; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(morning.x, morning.y, 26, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 0.55 * p; ctx.fillStyle = "#fff6e2";
+      ctx.fillRect(morning.x - 22, morning.y - 0.6, 44, 1.2);
+      ctx.fillRect(morning.x - 0.6, morning.y - 30, 1.2, 60);
+      ctx.globalAlpha = 1;
+    }
+
+    function frame(ts) { draw(ts / 1000); requestAnimationFrame(frame); }
+    build();
+    var rt;
+    window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { build(); if (still) draw(0); }, 150); });
+    if (still) draw(0); else requestAnimationFrame(frame);
+  }
+  try { starfield(); } catch (e) { /* decorative */ }
+
+  // ── the land and the column of soldiers in the armour of light ──────────
+  function march() {
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = byId("land"), column = byId("column"), stepsG = byId("steps");
+    var W = 0, H = 0, HZ = 0;
+
+    // Figure built in units: 100u from sole to crown. Everything — stride,
+    // pace, spacing — is measured in these units so size changes stay in step.
+    var THIGH = 26, SHIN = 26, HIP_H = 48.5, TORSO = 30, HEAD_R = 9;
+    var UARM = 17, FARM = 16;
+    var CYCLE = 72;            // ground covered per two steps
+    var LIFT = 10;             // a firm, high marching step
+    var GAP = 88;              // between soldiers in the column
+    var LEAN = 7 * Math.PI / 180;
+    var BASE_PX = 0.9;         // px per unit at 1× (≈90px tall soldiers)
+    var CADENCE = 0.95;        // cycles per second at 1× pace
+
+    var troops = [];
+    var dist = 0, last = 0;
+
+    function el(tag, cls, parent) {
+      var e = document.createElementNS(NS, tag);
+      if (cls) e.setAttribute("class", cls);
+      parent.appendChild(e);
+      return e;
+    }
+
+    function makeSoldier() {
+      var g = el("g", "", column);
+      var s = {
+        g: g,
+        back: el("path", "limb back", g),
+        tip: el("circle", "tipglow", g),
+        spear: el("line", "spear", g),
+        spearhead: el("path", "spearhead", g),
+        body: el("path", "limb", g),
+        plate: el("path", "armor", g),
+        kilt: el("path", "armor", g),
+        head: el("circle", "head", g),
+        helm: el("path", "armor", g),
+        crest: el("path", "crest", g),
+        arm: el("path", "limb", g),
+        pauldron: el("circle", "armor", g),
+        glow: [el("ellipse", "stepglow", stepsG), el("ellipse", "stepglow", stepsG)]
+      };
+      s.back.setAttribute("stroke-width", 4.4);
+      s.body.setAttribute("stroke-width", 4.6);
+      s.arm.setAttribute("stroke-width", 4.4);
+      s.plate.setAttribute("stroke-width", 1.2);
+      s.helm.setAttribute("stroke-width", 1.2);
+      s.kilt.setAttribute("stroke-width", 1.2);
+      s.pauldron.setAttribute("stroke-width", 1.2);
+      s.pauldron.setAttribute("r", 4.6);
+      s.head.setAttribute("stroke-width", 2.6);
+      s.head.setAttribute("r", HEAD_R);
+      s.crest.setAttribute("stroke-width", 3.4);
+      s.spear.setAttribute("stroke-width", 2.6);
+      s.tip.setAttribute("r", 14);
+      return s;
+    }
+    function removeSoldier(s) {
+      s.g.remove(); s.glow[0].remove(); s.glow[1].remove();
+    }
+
+    // two-bone IK: the joint between a and b bends to the side `side` (+1/-1)
+    function ik(ax, ay, bx, by, l1, l2, side) {
+      var dx = bx - ax, dy = by - ay, d = Math.sqrt(dx * dx + dy * dy);
+      d = Math.max(0.001, Math.min(l1 + l2 - 0.001, d));
+      var base = Math.atan2(dy, dx);
+      var c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+      var ang = base + side * Math.acos(Math.max(-1, Math.min(1, c)));
+      return [ax + Math.cos(ang) * l1, ay + Math.sin(ang) * l1];
+    }
+    function f(n) { return n.toFixed(2); }
+    function smooth(t) { return t * t * (3 - 2 * t); }
+
+    // Foot position relative to the hip for a leg at gait phase p (0..1).
+    // Stance (first half): planted on the ground, sliding back exactly as fast
+    // as the body moves forward, so it stays fixed in the world — no skating.
+    function foot(p) {
+      if (p < 0.5) {
+        var s = p / 0.5;
+        return { x: CYCLE / 4 - s * CYCLE / 2, y: 0, stance: s };
+      }
+      var w = (p - 0.5) / 0.5, e = smooth(w);
+      return { x: -CYCLE / 4 + e * CYCLE / 2, y: -LIFT * Math.sin(Math.PI * w), stance: -1 };
+    }
+
+    function pose(s, phase) {
+      // hip is highest mid-stance, dips at each footfall: a solid, weighted step
+      var hy = -HIP_H + 1.6 * Math.cos(4 * Math.PI * phase);
+      var hx = 0;
+      var tx = Math.sin(LEAN), ty = -Math.cos(LEAN);         // torso direction
+      var nx = hx + tx * TORSO, ny = hy + ty * TORSO;         // neck
+      var cx = nx + tx * (HEAD_R + 2), cy = ny + ty * (HEAD_R + 2);
+      var sx = nx - tx * 3, sy = ny - ty * 3;                 // shoulder
+
+      var fa = foot(phase), fb = foot((phase + 0.5) % 1);
+      var ka = ik(hx, hy, fa.x, fa.y, THIGH, SHIN, -1);
+      var kb = ik(hx, hy, fb.x, fb.y, THIGH, SHIN, -1);
+
+      // back arm swings opposite the near leg, held firm at the elbow
+      var sw = Math.sin(2 * Math.PI * phase) * 0.42;
+      var ex = sx + Math.sin(sw) * UARM, ey = sy + Math.cos(sw) * UARM;
+      var hx2 = ex + Math.sin(sw + 0.45) * FARM, hy2 = ey + Math.cos(sw + 0.45) * FARM;
+
+      // spear arm: hand raised before the face, gripping the upright spear,
+      // lifting slightly on every footfall
+      var bob = 1.4 * Math.cos(4 * Math.PI * phase);
+      var gx = sx + 15, gy = sy - 9 + bob;
+      var el2 = ik(sx, sy, gx, gy, UARM, FARM, 1);
+
+      // back leg + back arm
+      s.back.setAttribute("d",
+        "M" + f(hx) + "," + f(hy) + "L" + f(kb[0]) + "," + f(kb[1]) + "L" + f(fb.x) + "," + f(fb.y) +
+        "l7,0" +
+        "M" + f(sx) + "," + f(sy) + "L" + f(ex) + "," + f(ey) + "L" + f(hx2) + "," + f(hy2));
+      // near leg + torso
+      s.body.setAttribute("d",
+        "M" + f(hx) + "," + f(hy) + "L" + f(ka[0]) + "," + f(ka[1]) + "L" + f(fa.x) + "," + f(fa.y) +
+        "l7,0" +
+        "M" + f(hx) + "," + f(hy) + "L" + f(nx) + "," + f(ny));
+      s.arm.setAttribute("d",
+        "M" + f(sx) + "," + f(sy) + "L" + f(el2[0]) + "," + f(el2[1]) + "L" + f(gx) + "," + f(gy));
+
+      // breastplate along the upper torso
+      var px = -ty, py = tx;   // torso normal
+      function pt(along, side) { return f(hx + tx * along + px * side) + "," + f(hy + ty * along + py * side); }
+      s.plate.setAttribute("d",
+        "M" + pt(TORSO - 1, -6.5) + "L" + pt(TORSO - 1, 7) + "L" + pt(TORSO - 15, 6) +
+        "Q" + pt(7, 2) + " " + pt(8, -1) + "L" + pt(TORSO - 15, -5.5) + "Z");
+      // armoured skirt of plates over the hips
+      s.kilt.setAttribute("d",
+        "M" + pt(5, -5.5) + "L" + pt(5, 6) + "L" + pt(-7, 8) + "L" + pt(-7, 2.5) + "L" + pt(-4, 1) +
+        "L" + pt(-7, -1) + "L" + pt(-7, -7.5) + "Z");
+      s.pauldron.setAttribute("cx", f(sx + 1)); s.pauldron.setAttribute("cy", f(sy + 1));
+
+      s.head.setAttribute("cx", f(cx)); s.head.setAttribute("cy", f(cy));
+      var R = HEAD_R + 1.4;
+      s.helm.setAttribute("d",
+        "M" + f(cx - R) + "," + f(cy + 1.5) + "A" + R + "," + R + " 0 0 1 " + f(cx + R) + "," + f(cy + 1.5) +
+        "L" + f(cx + R + 3) + "," + f(cy + 2.5) + "L" + f(cx - R) + "," + f(cy + 2.5) + "Z");
+      s.crest.setAttribute("d",
+        "M" + f(cx + 1) + "," + f(cy - R) + "Q" + f(cx - 6) + "," + f(cy - R - 9) + " " +
+        f(cx - 16) + "," + f(cy - R + 3));
+
+      // the spear: upright, tipped slightly forward, shining at its point
+      var lean = 0.06;
+      var bx = gx - Math.sin(lean) * 26, by = gy + Math.cos(lean) * 26;
+      var topx = gx + Math.sin(lean) * 52, topy = gy - Math.cos(lean) * 52;
+      s.spear.setAttribute("x1", f(bx)); s.spear.setAttribute("y1", f(by));
+      s.spear.setAttribute("x2", f(topx)); s.spear.setAttribute("y2", f(topy));
+      var ux = Math.sin(lean), uy = -Math.cos(lean), vx = -uy, vy = ux;
+      var tipx = topx + ux * 13, tipy = topy + uy * 13;
+      s.spearhead.setAttribute("d",
+        "M" + f(tipx) + "," + f(tipy) +
+        "L" + f(topx + vx * 4.5) + "," + f(topy + vy * 4.5) +
+        "L" + f(topx + ux * 3) + "," + f(topy + uy * 3) +
+        "L" + f(topx - vx * 4.5) + "," + f(topy - vy * 4.5) + "Z");
+      s.tip.setAttribute("cx", f(topx + ux * 6)); s.tip.setAttribute("cy", f(topy + uy * 6));
+
+      return [fa, fb];
+    }
+
+    function build() {
+      W = svg.clientWidth || window.innerWidth;
+      H = svg.clientHeight || window.innerHeight;
+      HZ = H * parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--horizon")) / 100;
+      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      var g = byId("ground");
+      g.setAttribute("x", 0); g.setAttribute("y", HZ); g.setAttribute("width", W); g.setAttribute("height", H - HZ + 2);
+      var rim = byId("groundRim");
+      rim.setAttribute("x", 0); rim.setAttribute("y", HZ - 0.8); rim.setAttribute("width", W);
+      byId("hillsFar").setAttribute("d", hills(W, HZ, H * 0.045, 5, 0.3));
+      byId("hillsNear").setAttribute("d", hills(W, HZ, H * 0.022, 9, 2.1));
+    }
+    // a soft range of hills sitting on the horizon
+    function hills(w, base, amp, waves, seed) {
+      var d = "M0," + f(base + 2), N = 120;
+      for (var i = 0; i <= N; i++) {
+        var x = i / N * w, u = i / N;
+        var y = base - amp * (0.55 + 0.3 * Math.sin(u * waves * 3.1 + seed) +
+          0.15 * Math.sin(u * waves * 7.3 + seed * 3));
+        d += "L" + f(x) + "," + f(y);
+      }
+      return d + "L" + f(w) + "," + f(base + 2) + "Z";
+    }
+
+    // px per unit: follows the size slider, shrinking a little on small screens
+    function unit() { return BASE_PX * army.size * Math.min(1, Math.max(0.55, Math.min(H / 900, W / 1300))); }
+
+    function sync() {
+      while (troops.length < army.count) troops.push(makeSoldier());
+      while (troops.length > army.count) removeSoldier(troops.pop());
+    }
+
+    function draw() {
+      sync();
+      var k = unit();
+      var gap = GAP * k, loop = W + gap * Math.max(army.count, 2) + 120 * k;
+      var phase = (dist / CYCLE) % 1;
+      // the column keeps formation and wraps round as one body
+      for (var i = 0; i < troops.length; i++) {
+        var s = troops[i];
+        var lead = (dist * k) % loop;
+        var x = lead - i * gap;
+        x = ((x % loop) + loop) % loop - 60 * k;
+        s.g.setAttribute("transform", "translate(" + f(x) + "," + f(HZ) + ") scale(" + k.toFixed(4) + ")");
+        var feet = pose(s, phase);
+        for (var j = 0; j < 2; j++) {
+          var e = s.glow[j], ft = feet[j];
+          if (ft.stance < 0) { e.setAttribute("opacity", 0); continue; }
+          var o = Math.pow(1 - ft.stance, 2);
+          e.setAttribute("cx", f(x + (ft.x + 4) * k));
+          e.setAttribute("cy", f(HZ + 1));
+          e.setAttribute("rx", f((10 + 10 * ft.stance) * k));
+          e.setAttribute("ry", f((2.2 + 1.5 * ft.stance) * k));
+          e.setAttribute("opacity", (0.85 * o).toFixed(3));
+        }
+      }
+    }
+
+    function frame(ts) {
+      var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
+      last = ts;
+      dist += CYCLE * CADENCE * army.pace * dt;
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    build();
+    var rt;
+    window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { build(); draw(); }, 150); });
+    if (still) {
+      dist = 0;
+      // stand the column in the middle of the screen, at attention
+      var tick = function () { dist = (W * 0.45) / unit(); draw(); };
+      tick(); setInterval(tick, 500);
+    } else requestAnimationFrame(frame);
+  }
+  try { march(); } catch (e) { /* decorative — never take the words down */ }
+
+  window.addEventListener("resize", function () {
+    var HW = field.clientWidth, HH = field.clientHeight;
+    shown.forEach(function (rec) {
+      var el = rec.el;
+      if (!el || !el._box) return;
+      el._box.x = Math.min(el._box.x, Math.max(0, HW - el._box.w - 10));
+      el._box.y = Math.min(el._box.y, Math.max(0, HH - el._box.h - 10));
+      el.style.left = Math.round(el._box.x) + "px";
+      el.style.top = Math.round(el._box.y) + "px";
+    });
+  });
+
+  byId("gear").addEventListener("click", function () { openSettings(); syncSliders(false); });
+  byId("btnLoadCols").addEventListener("click", loadCols);
+  byId("btnSave").addEventListener("click", doSave);
+  byId("settings").addEventListener("click", function (e) { if (e.target === byId("settings")) byId("settings").classList.remove("open"); });
+
+  // layout test words — untracked, they fade on their own
+  var SAMPLES = ["미움", "게으름", "거짓말", "시기와 질투", "분노", "험담", "핑계", "음란", "교만", "염려", "비교", "중독"];
+  byId("stage").addEventListener("dblclick", function () {
+    var el = makeWord(pick(SAMPLES), 1 + Math.floor(Math.random() * 4));
+    testWords.push(el);
+    setTimeout(function () { testWords.splice(testWords.indexOf(el), 1); fadeOut(el); }, 15000);
+  });
+
+  applyDisplay(cfg);
+  if (cfg) restart(); else { openSettings(); setStatus("idle", "설정이 필요합니다"); }
+  syncSliders(false);
+})();
+</script>
+</body>
+</html>
