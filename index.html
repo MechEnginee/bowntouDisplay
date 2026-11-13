@@ -14,6 +14,7 @@
     --mq: 1;
     --labelScale: 1;
     --verseScale: 1;
+    --titleScale: 1;
     --qrScale: 1;
     --horizon: 87%;          /* where the ground meets the sky */
     --panel: #161329;
@@ -68,7 +69,7 @@
   }
   .question .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
-    font-size: calc(14px * var(--labelScale)); letter-spacing: .14em; font-weight: 500;
+    font-size: calc(14px * var(--titleScale)); letter-spacing: .14em; font-weight: 500;
     color: #b3acd6; margin-bottom: 1.1vh;
   }
   .question .eyebrow::before, .question .eyebrow::after {
@@ -136,7 +137,7 @@
     .qr .msg { font-size: calc(11.5px * (.5 + var(--qrScale) / 2)); }
     :root { --mq: .68; --horizon: 85%; }
     .question { top: 4vh; }
-    .question .eyebrow { font-size: calc(12px * var(--labelScale)); letter-spacing: .06em; }
+    .question .eyebrow { font-size: calc(12px * var(--titleScale)); letter-spacing: .06em; }
     .question .eyebrow::before, .question .eyebrow::after { width: 14px; }
     #field { top: 40vh; bottom: 30vh; }
   }
@@ -376,6 +377,17 @@
 
     <div class="row">
       <div class="field">
+        <label>예배 제목 크기 <span class="hint">(본투워십 11월 예배)</span></label>
+        <div class="slider">
+          <input id="f_titleScale" type="range" min="0.6" max="3" step="0.05" value="1" />
+          <output id="o_titleScale">1.00×</output>
+        </div>
+      </div>
+      <div class="field"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
         <label>말씀 구절 크기</label>
         <div class="slider">
           <input id="f_verseScale" type="range" min="0.6" max="2.5" step="0.05" value="1" />
@@ -426,7 +438,7 @@
   // deleted from the sheet also disappear from the screen.
   var shown = new Map();
   var DEFAULTS = { maxWords: 24, fontScale: 1, speed: 1, soldier: 1, troops: 10, march: 1,
-                   labelScale: 1, verseScale: 1, qrScale: 1, wordWeight: 400 };
+                   labelScale: 1, verseScale: 1, titleScale: 1, qrScale: 1, wordWeight: 400 };
   var MAX_WORDS = DEFAULTS.maxWords;
   var W_STEPS = [400, 500, 600, 700, 800, 900];
   var weightBase = DEFAULTS.wordWeight;
@@ -594,6 +606,7 @@
     root.setProperty("--labelScale", num(c, "labelScale"));
     root.setProperty("--verseScale", num(c, "verseScale"));
     root.setProperty("--qrScale", num(c, "qrScale"));
+    root.setProperty("--titleScale", num(c, "titleScale"));
     fitField();
     army.size = num(c, "soldier");
     army.count = num(c, "troops");
@@ -658,7 +671,7 @@
       byId("f_sheetId").value = cfg.sheetId || DEFAULT_SHEET_ID;
       byId("f_tab").value = cfg.tab || "";
       byId("f_interval").value = cfg.interval || 5;
-      ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "verseScale", "qrScale", "wordWeight"]
+      ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "verseScale", "titleScale", "qrScale", "wordWeight"]
         .forEach(function (k) { byId("f_" + k).value = num(cfg, k); });
       byId("f_label").value = cfg.label || DEFAULT_LABEL;
       if (cfg.col) setOne("f_col", cfg.col); else byId("f_col").innerHTML = '<option value="">자동 — 타임스탬프 다음 열</option>';
@@ -679,7 +692,7 @@
       maxWords: Math.max(4, Math.round(f("maxWords"))),
       fontScale: f("fontScale"), speed: f("speed"),
       soldier: f("soldier"), troops: Math.round(f("troops")), march: f("march"),
-      labelScale: f("labelScale"), verseScale: f("verseScale"), qrScale: f("qrScale"),
+      labelScale: f("labelScale"), verseScale: f("verseScale"), titleScale: f("titleScale"), qrScale: f("qrScale"),
       wordWeight: parseInt(byId("f_wordWeight").value, 10) || DEFAULTS.wordWeight,
       col: byId("f_col").value,
       label: byId("f_label").value.trim() || DEFAULT_LABEL
@@ -716,7 +729,7 @@
   }
 
   // sliders preview live behind the dialog
-  var SLIDERS = { maxWords: 0, fontScale: 2, speed: 2, soldier: 2, troops: 0, march: 2, labelScale: 2, verseScale: 2, qrScale: 2 };
+  var SLIDERS = { maxWords: 0, fontScale: 2, speed: 2, soldier: 2, troops: 0, march: 2, labelScale: 2, verseScale: 2, titleScale: 2, qrScale: 2 };
   function syncSliders(live) {
     var c = {};
     Object.keys(SLIDERS).forEach(function (k) {
