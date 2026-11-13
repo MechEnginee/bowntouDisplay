@@ -13,6 +13,8 @@
     --scale: 1;
     --mq: 1;
     --labelScale: 1;
+    --verseScale: 1;
+    --qrScale: 1;
     --horizon: 87%;          /* where the ground meets the sky */
     --panel: #161329;
     --border: rgba(214,204,255,.16);
@@ -85,14 +87,14 @@
   .verse { margin-top: 1.8vh; display: flex; flex-direction: column; align-items: center; }
   .verse p {
     font-family: "Noto Serif KR", serif; font-weight: 400; line-height: 1.75;
-    font-size: calc(clamp(12.5px, 1.12vw, 19px) * var(--labelScale));
+    font-size: calc(clamp(12.5px, 1.12vw, 19px) * var(--verseScale));
     color: #d8cfe6; max-width: 72em; text-shadow: 0 1px 8px rgba(0,0,0,.5); word-break: keep-all;
   }
   .verse p b { font-weight: 700; color: var(--gold-soft);
     text-shadow: 0 0 14px rgba(255,200,110,.45); }
   .verse cite {
     display: block; margin-top: .9vh; font-style: normal; letter-spacing: .3em;
-    font-size: calc(clamp(11px, .95vw, 15px) * var(--labelScale)); color: #a19bbd;
+    font-size: calc(clamp(11px, .95vw, 15px) * var(--verseScale)); color: #a19bbd;
   }
   .verse sup { font-size: .62em; color: #a19bbd; margin-right: .25em; font-family: "Noto Sans KR", sans-serif; }
 
@@ -112,7 +114,26 @@
   @keyframes d3 { 0%,100%{transform:translate(0,0) rotate(0)} 20%{transform:translate(10px,14px) rotate(-1deg)}
     50%{transform:translate(-14px,-8px) rotate(1deg)} 80%{transform:translate(6px,-12px) rotate(0)} }
 
+  /* ── QR to the form, bottom right ── */
+  .qr {
+    position: absolute; right: 24px; bottom: 24px; z-index: 7;
+    display: flex; align-items: flex-end; gap: 14px; pointer-events: none;
+  }
+  .qr .msg {
+    text-align: right; line-height: 1.6; color: #e9e3f7; word-break: keep-all;
+    font-size: calc(clamp(12px, 1vw, 17px) * (.5 + var(--qrScale) / 2));
+    text-shadow: 0 1px 8px rgba(0,0,0,.7);
+  }
+  .qr .msg b { color: var(--gold-soft); font-weight: 700; }
+  .qr .card {
+    width: calc(clamp(96px, 10vw, 170px) * var(--qrScale)); aspect-ratio: 1; padding: 6px; border-radius: 12px;
+    background: #fff; box-shadow: 0 0 0 1px rgba(255,220,150,.5), 0 0 24px rgba(255,200,110,.35);
+  }
+  .qr .card img { display: block; width: 100%; height: 100%; }
+
   @media (max-width: 680px) {
+    .qr { right: 12px; bottom: 12px; gap: 10px; }
+    .qr .msg { font-size: calc(11.5px * (.5 + var(--qrScale) / 2)); }
     :root { --mq: .68; --horizon: 85%; }
     .question { top: 4vh; }
     .question .eyebrow { font-size: calc(12px * var(--labelScale)); letter-spacing: .06em; }
@@ -243,6 +264,11 @@
 
   <div id="field"></div>
 
+  <div class="qr">
+    <p class="msg">QR을 찍어 설문을 작성하면<br /><b>내 답이 이 화면에 나타납니다</b></p>
+    <div class="card"><img src="qr.png" alt="설문 QR 코드" /></div>
+  </div>
+
 </div>
 
 <button id="gear" title="설정">⚙️</button>
@@ -330,7 +356,7 @@
 
     <div class="row">
       <div class="field">
-        <label>질문·말씀 크기</label>
+        <label>질문 크기</label>
         <div class="slider">
           <input id="f_labelScale" type="range" min="0.6" max="2" step="0.05" value="1" />
           <output id="o_labelScale">1.00×</output>
@@ -345,6 +371,23 @@
           <option value="700">더 굵게</option>
           <option value="800">아주 굵게</option>
         </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>말씀 구절 크기</label>
+        <div class="slider">
+          <input id="f_verseScale" type="range" min="0.6" max="2.5" step="0.05" value="1" />
+          <output id="o_verseScale">1.00×</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>QR 크기 <span class="hint">(안내 문구도 함께)</span></label>
+        <div class="slider">
+          <input id="f_qrScale" type="range" min="0.5" max="3" step="0.05" value="1" />
+          <output id="o_qrScale">1.00×</output>
+        </div>
       </div>
     </div>
 
@@ -383,7 +426,7 @@
   // deleted from the sheet also disappear from the screen.
   var shown = new Map();
   var DEFAULTS = { maxWords: 24, fontScale: 1, speed: 1, soldier: 1, troops: 10, march: 1,
-                   labelScale: 1, wordWeight: 400 };
+                   labelScale: 1, verseScale: 1, qrScale: 1, wordWeight: 400 };
   var MAX_WORDS = DEFAULTS.maxWords;
   var W_STEPS = [400, 500, 600, 700, 800, 900];
   var weightBase = DEFAULTS.wordWeight;
@@ -549,6 +592,9 @@
     root.setProperty("--scale", num(c, "fontScale"));
     root.setProperty("--spd", (1 / num(c, "speed")).toFixed(3));
     root.setProperty("--labelScale", num(c, "labelScale"));
+    root.setProperty("--verseScale", num(c, "verseScale"));
+    root.setProperty("--qrScale", num(c, "qrScale"));
+    fitField();
     army.size = num(c, "soldier");
     army.count = num(c, "troops");
     army.pace = num(c, "march");
@@ -561,6 +607,17 @@
       shown.delete(keys[i]);
     }
   }
+
+  // words float between the bottom of the question/verse block and the soldiers,
+  // so a bigger verse pushes the word area down instead of being covered
+  function fitField() {
+    var q = document.querySelector(".question");
+    if (!q) return;
+    var top = q.getBoundingClientRect().bottom + 18;
+    field.style.top = Math.max(top, window.innerHeight * 0.2) + "px";
+  }
+  window.addEventListener("resize", fitField);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitField);
 
   function restart() {
     if (timer) { clearInterval(timer); timer = null; }
@@ -601,7 +658,7 @@
       byId("f_sheetId").value = cfg.sheetId || DEFAULT_SHEET_ID;
       byId("f_tab").value = cfg.tab || "";
       byId("f_interval").value = cfg.interval || 5;
-      ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "wordWeight"]
+      ["maxWords", "fontScale", "speed", "soldier", "troops", "march", "labelScale", "verseScale", "qrScale", "wordWeight"]
         .forEach(function (k) { byId("f_" + k).value = num(cfg, k); });
       byId("f_label").value = cfg.label || DEFAULT_LABEL;
       if (cfg.col) setOne("f_col", cfg.col); else byId("f_col").innerHTML = '<option value="">자동 — 타임스탬프 다음 열</option>';
@@ -622,7 +679,7 @@
       maxWords: Math.max(4, Math.round(f("maxWords"))),
       fontScale: f("fontScale"), speed: f("speed"),
       soldier: f("soldier"), troops: Math.round(f("troops")), march: f("march"),
-      labelScale: f("labelScale"),
+      labelScale: f("labelScale"), verseScale: f("verseScale"), qrScale: f("qrScale"),
       wordWeight: parseInt(byId("f_wordWeight").value, 10) || DEFAULTS.wordWeight,
       col: byId("f_col").value,
       label: byId("f_label").value.trim() || DEFAULT_LABEL
@@ -659,7 +716,7 @@
   }
 
   // sliders preview live behind the dialog
-  var SLIDERS = { maxWords: 0, fontScale: 2, speed: 2, soldier: 2, troops: 0, march: 2, labelScale: 2 };
+  var SLIDERS = { maxWords: 0, fontScale: 2, speed: 2, soldier: 2, troops: 0, march: 2, labelScale: 2, verseScale: 2, qrScale: 2 };
   function syncSliders(live) {
     var c = {};
     Object.keys(SLIDERS).forEach(function (k) {
